@@ -53,14 +53,14 @@ model Song {
   title       String
   duration    Int // Store in seconds
   releaseDate DateTime
-  albumId     String? // Nullable for singles
+  albumId     String
   url         String
   coverUri    String
   views       Int      @default(0)
   lyrics      String?
   trackNumber Int? // Position within an album
 
-  album     Album?         @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  album     Album          @relation(fields: [albumId], references: [id], onDelete: Cascade)
   genres    GenreSong[]
   artists   SongArtist[]
   playlists PlayListSong[]

@@ -1,4 +1,5 @@
 import prisma from "../../config/db.js"
+import { uploadStream, deleteFile, extractPublicId } from "../../config/cloudinary.js"
 
 export const getCurrentUser = async (req, res, next) => {
   try {
@@ -28,10 +29,37 @@ export const getCurrentUser = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    const { displayName, avatarUri } = req.body
+    const { displayName } = req.body
+    const userId = req.user.userId
+
+    let avatarUri = undefined
+    if (req.file) {
+      // Get current user to retrieve old avatar
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { avatarUri: true },
+      })
+
+      // Delete old avatar if it exists
+      if (currentUser?.avatarUri) {
+        const oldPublicId = extractPublicId(currentUser.avatarUri)
+        if (oldPublicId) {
+          await deleteFile(oldPublicId, "image").catch((err) => {
+            console.error("[Cloudinary] Failed to delete old avatar:", err)
+          })
+        }
+      }
+
+      // Upload new avatar
+      const uploadResult = await uploadStream(req.file.buffer, {
+        folder: "avatars",
+        resource_type: "image",
+      })
+      avatarUri = uploadResult.secure_url
+    }
 
     const user = await prisma.user.update({
-      where: { id: req.user.userId },
+      where: { id: userId },
       data: {
         ...(displayName && { displayName }),
         ...(avatarUri && { avatarUri }),
@@ -46,6 +74,40 @@ export const updateProfile = async (req, res, next) => {
     })
 
     res.status(200).json(user)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteAvatar = async (req, res, next) => {
+  try {
+    const userId = req.user.userId
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarUri: true },
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    // Delete avatar from Cloudinary if it exists
+    if (user.avatarUri) {
+      const publicId = extractPublicId(user.avatarUri)
+      if (publicId) {
+        await deleteFile(publicId, "image").catch((err) => {
+          console.error("[Cloudinary] Failed to delete avatar:", err)
+        })
+      }
+    }
+
+    // Update user to remove avatar
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUri: null },
+    })
+
+    res.status(200).json({ message: "Avatar deleted successfully" })
   } catch (error) {
     next(error)
   }

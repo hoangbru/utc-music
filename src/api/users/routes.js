@@ -1,10 +1,20 @@
-import express from "express"
-import { authMiddleware } from "../../middlewares/authMiddleware.js"
-import { getCurrentUser, updateProfile, getUserPlaylists, getLikedSongs } from "./controller.js"
-import { validateRequest } from "../../utils/validation.js"
-import { updateProfileSchema } from "./validation.js"
+import express from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import {
+  getCurrentUser,
+  updateProfile,
+  getUserPlaylists,
+  getLikedSongs,
+  deleteAvatar,
+} from "./controller.js";
+import upload from "../../middlewares/upload.js";
+import { validateRequest } from "../../utils/validation.js";
+import { updateProfileSchema } from "./validation.js";
 
-const router = express.Router()
+const router = express.Router();
+
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
 /**
  * @swagger
@@ -18,32 +28,52 @@ const router = express.Router()
  *       200:
  *         description: User profile retrieved
  */
-router.get("/", authMiddleware, getCurrentUser)
+router.get("/", getCurrentUser);
 
 /**
  * @swagger
  * /api/me:
  *   put:
- *     summary: Update user profile
+ *     summary: Update user profile with optional avatar upload
  *     tags: [Users]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               displayName:
  *                 type: string
- *               avatarUri:
+ *               avatar:
  *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Profile updated
  */
-router.put("/", authMiddleware, validateRequest(updateProfileSchema), updateProfile)
+router.put(
+  "/",
+  upload.single("avatar"),
+  validateRequest(updateProfileSchema),
+  updateProfile
+);
+
+/**
+ * @swagger
+ * /api/me/avatar:
+ *   delete:
+ *     summary: Delete user avatar
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Avatar deleted
+ */
+router.delete("/avatar", deleteAvatar);
 
 /**
  * @swagger
@@ -68,7 +98,7 @@ router.put("/", authMiddleware, validateRequest(updateProfileSchema), updateProf
  *       200:
  *         description: User playlists retrieved
  */
-router.get("/playlists", authMiddleware, getUserPlaylists)
+router.get("/playlists", getUserPlaylists);
 
 /**
  * @swagger
@@ -93,6 +123,6 @@ router.get("/playlists", authMiddleware, getUserPlaylists)
  *       200:
  *         description: Liked songs retrieved
  */
-router.get("/liked-songs", authMiddleware, getLikedSongs)
+router.get("/liked-songs", getLikedSongs);
 
-export default router
+export default router;

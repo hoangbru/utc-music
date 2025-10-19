@@ -2,21 +2,17 @@ import Joi from "joi"
 
 export const createSongSchema = Joi.object({
   title: Joi.string().required(),
-  duration: Joi.number().required(),
   releaseDate: Joi.date().required(),
-  albumId: Joi.string().uuid(),
-  url: Joi.string().uri().required(),
-  coverUri: Joi.string().uri().required(),
+  albumId: Joi.string().required(),
   lyrics: Joi.string(),
-  trackNumber: Joi.number(),
-  artistIds: Joi.array().items(Joi.string().uuid()),
-  genreIds: Joi.array().items(Joi.string().uuid()),
+  trackNumber: Joi.number().allow(''),
+  artistIds: Joi.string().required(),
+  genreIds: Joi.string().required(),
 })
 
 export const createArtistSchema = Joi.object({
   name: Joi.string().required(),
   biography: Joi.string(),
-  avatarUri: Joi.string().uri(),
   country: Joi.string(),
 })
 
@@ -25,7 +21,7 @@ export const createAlbumSchema = Joi.object({
   releaseDate: Joi.date().required(),
   coverUri: Joi.string().uri(),
   description: Joi.string(),
-  artistIds: Joi.array().items(Joi.string().uuid()),
+  artistIds: Joi.string().required(),
 })
 
 export const createGenreSchema = Joi.object({

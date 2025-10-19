@@ -1,6 +1,6 @@
-import express from "express"
-import { authMiddleware } from "../../middlewares/authMiddleware.js"
-import { adminMiddleware } from "../../middlewares/adminMiddleware.js"
+import express from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import { adminMiddleware } from "../../middlewares/adminMiddleware.js";
 import {
   createSong,
   getAllSongs,
@@ -21,20 +21,21 @@ import {
   deleteGenre,
   getAllUsers,
   updateUserStatus,
-} from "./controller.js"
-import { validateRequest } from "../../utils/validation.js"
+} from "./controller.js";
+import { validateRequest } from "../../utils/validation.js";
 import {
-  createSongSchema,
   createArtistSchema,
   createAlbumSchema,
   createGenreSchema,
   updateUserStatusSchema,
-} from "./validation.js"
+  createSongSchema,
+} from "./validation.js";
+import upload from "../../middlewares/upload.js";
 
-const router = express.Router()
+const router = express.Router();
 
 // Apply auth and admin middleware to all routes
-router.use(authMiddleware, adminMiddleware)
+router.use(authMiddleware, adminMiddleware);
 
 // --- SONGS ---
 
@@ -42,32 +43,63 @@ router.use(authMiddleware, adminMiddleware)
  * @swagger
  * /api/admin/songs:
  *   post:
- *     summary: Create song (Admin)
+ *     summary: Create song with audio and cover image upload (Admin)
  *     tags: [Admin]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - title
+ *               - releaseDate
+ *               - albumId
+ *               - songFile
+ *               - coverImage
+ *               - artistIds
+ *               - genreIds
  *             properties:
  *               title:
  *                 type: string
- *               duration:
- *                 type: number
  *               releaseDate:
  *                 type: string
- *               url:
+ *                 format: date
+ *               albumId:
  *                 type: string
- *               coverUri:
+ *               lyrics:
  *                 type: string
+ *               trackNumber:
+ *                 type: integer
+ *               artistIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               genreIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               songFile:
+ *                 type: string
+ *                 format: binary
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Song created
  */
-router.post("/songs", validateRequest(createSongSchema), createSong)
+router.post(
+  "/songs",
+  upload.fields([
+    { name: "songFile", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  validateRequest(createSongSchema),
+  createSong
+);
 
 /**
  * @swagger
@@ -92,13 +124,13 @@ router.post("/songs", validateRequest(createSongSchema), createSong)
  *       200:
  *         description: All songs
  */
-router.get("/songs", getAllSongs)
+router.get("/songs", getAllSongs);
 
 /**
  * @swagger
  * /api/admin/songs/{id}:
  *   put:
- *     summary: Update song (Admin)
+ *     summary: Update song with optional file uploads (Admin)
  *     tags: [Admin]
  *     security:
  *       - BearerAuth: []
@@ -108,11 +140,40 @@ router.get("/songs", getAllSongs)
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               releaseDate:
+ *                 type: string
+ *                 format: date
+ *               lyrics:
+ *                 type: string
+ *               trackNumber:
+ *                 type: integer
+ *               songFile:
+ *                 type: string
+ *                 format: binary
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Song updated
  */
-router.put("/songs/:id", updateSong)
+router.put(
+  "/songs/:id",
+  upload.fields([
+    { name: "songFile", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  updateSong
+);
 
 /**
  * @swagger
@@ -132,7 +193,7 @@ router.put("/songs/:id", updateSong)
  *       200:
  *         description: Song deleted
  */
-router.delete("/songs/:id", deleteSong)
+router.delete("/songs/:id", deleteSong);
 
 // --- ARTISTS ---
 
@@ -140,30 +201,38 @@ router.delete("/songs/:id", deleteSong)
  * @swagger
  * /api/admin/artists:
  *   post:
- *     summary: Create artist (Admin)
+ *     summary: Create artist with optional avatar upload (Admin)
  *     tags: [Admin]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
  *             properties:
  *               name:
  *                 type: string
  *               biography:
  *                 type: string
- *               avatarUri:
- *                 type: string
  *               country:
  *                 type: string
+ *               avatarUri:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Artist created
  */
-router.post("/artists", validateRequest(createArtistSchema), createArtist)
+router.post(
+  "/artists",
+  upload.single("avatarUri"),
+  validateRequest(createArtistSchema),
+  createArtist
+);
 
 /**
  * @swagger
@@ -188,13 +257,13 @@ router.post("/artists", validateRequest(createArtistSchema), createArtist)
  *       200:
  *         description: All artists
  */
-router.get("/artists", getAllArtists)
+router.get("/artists", getAllArtists);
 
 /**
  * @swagger
  * /api/admin/artists/{id}:
  *   put:
- *     summary: Update artist (Admin)
+ *     summary: Update an artist (Admin)
  *     tags: [Admin]
  *     security:
  *       - BearerAuth: []
@@ -204,11 +273,35 @@ router.get("/artists", getAllArtists)
  *         required: true
  *         schema:
  *           type: string
+ *         description: The artist ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               biography:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               avatarUri:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Artist updated
  */
-router.put("/artists/:id", updateArtist)
+router.put(
+  "/artists/:id",
+  upload.single("avatarUri"),
+  validateRequest(createArtistSchema),
+  updateArtist
+);
 
 /**
  * @swagger
@@ -228,7 +321,7 @@ router.put("/artists/:id", updateArtist)
  *       200:
  *         description: Artist deleted
  */
-router.delete("/artists/:id", deleteArtist)
+router.delete("/artists/:id", deleteArtist);
 
 /**
  * @swagger
@@ -248,7 +341,7 @@ router.delete("/artists/:id", deleteArtist)
  *       200:
  *         description: Artist verified
  */
-router.put("/artists/:id/verify", verifyArtist)
+router.put("/artists/:id/verify", verifyArtist);
 
 // --- ALBUMS ---
 
@@ -256,30 +349,49 @@ router.put("/artists/:id/verify", verifyArtist)
  * @swagger
  * /api/admin/albums:
  *   post:
- *     summary: Create album (Admin)
+ *     summary: Create an album (Admin)
  *     tags: [Admin]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - title
+ *               - releaseDate
+ *               - artistIds
  *             properties:
  *               title:
  *                 type: string
+ *                 example: "Midnight Memories"
  *               releaseDate:
  *                 type: string
+ *                 format: date
+ *                 example: "2024-11-12"
  *               coverUri:
  *                 type: string
+ *                 format: binary
+ *                 nullable: true
  *               description:
  *                 type: string
+ *                 example: "The third studio album by the band."
+ *               artistIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       201:
  *         description: Album created
  */
-router.post("/albums", validateRequest(createAlbumSchema), createAlbum)
+router.post(
+  "/albums",
+  upload.single("coverUri"),
+  validateRequest(createAlbumSchema),
+  createAlbum
+);
 
 /**
  * @swagger
@@ -304,7 +416,7 @@ router.post("/albums", validateRequest(createAlbumSchema), createAlbum)
  *       200:
  *         description: All albums
  */
-router.get("/albums", getAllAlbums)
+router.get("/albums", getAllAlbums);
 
 /**
  * @swagger
@@ -320,11 +432,33 @@ router.get("/albums", getAllAlbums)
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               releaseDate:
+ *                 type: string
+ *                 format: date
+ *               coverUri:
+ *                 type: string
+ *                 format: binary
+ *                 nullable: true
+ *               description:
+ *                 type: string
+ *               artistIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: Album updated
  */
-router.put("/albums/:id", updateAlbum)
+router.put("/albums/:id", upload.single("coverUri"), updateAlbum);
 
 /**
  * @swagger
@@ -344,7 +478,7 @@ router.put("/albums/:id", updateAlbum)
  *       200:
  *         description: Album deleted
  */
-router.delete("/albums/:id", deleteAlbum)
+router.delete("/albums/:id", deleteAlbum);
 
 // --- GENRES ---
 
@@ -371,7 +505,7 @@ router.delete("/albums/:id", deleteAlbum)
  *       201:
  *         description: Genre created
  */
-router.post("/genres", validateRequest(createGenreSchema), createGenre)
+router.post("/genres", validateRequest(createGenreSchema), createGenre);
 
 /**
  * @swagger
@@ -396,7 +530,7 @@ router.post("/genres", validateRequest(createGenreSchema), createGenre)
  *       200:
  *         description: All genres
  */
-router.get("/genres", getAllGenres)
+router.get("/genres", getAllGenres);
 
 /**
  * @swagger
@@ -416,7 +550,7 @@ router.get("/genres", getAllGenres)
  *       200:
  *         description: Genre updated
  */
-router.put("/genres/:id", updateGenre)
+router.put("/genres/:id", updateGenre);
 
 /**
  * @swagger
@@ -436,7 +570,7 @@ router.put("/genres/:id", updateGenre)
  *       200:
  *         description: Genre deleted
  */
-router.delete("/genres/:id", deleteGenre)
+router.delete("/genres/:id", deleteGenre);
 
 // --- USERS ---
 
@@ -463,7 +597,7 @@ router.delete("/genres/:id", deleteGenre)
  *       200:
  *         description: All users
  */
-router.get("/users", getAllUsers)
+router.get("/users", getAllUsers);
 
 /**
  * @swagger
@@ -493,6 +627,10 @@ router.get("/users", getAllUsers)
  *       200:
  *         description: User status updated
  */
-router.put("/users/:id/status", validateRequest(updateUserStatusSchema), updateUserStatus)
+router.put(
+  "/users/:id/status",
+  validateRequest(updateUserStatusSchema),
+  updateUserStatus
+);
 
-export default router
+export default router;
