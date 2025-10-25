@@ -36,12 +36,16 @@ const extractPublicId = (secureUrl) => {
  * @returns {Promise<Object>} - { secure_url, public_id, duration (for audio/video) }
  */
 export const uploadStream = (buffer, options = {}) => {
+  const baseFolder = "utc-music";
+  const finalFolder = options.folder
+    ? `${baseFolder}/${options.folder}`
+    : baseFolder;
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.v2.uploader.upload_stream(
       {
-        folder: options.folder || "uploads",
-        resource_type: options.resource_type || "auto",
         ...options,
+        folder: finalFolder,
+        resource_type: options.resource_type || "auto",
       },
       (error, result) => {
         if (error) {
