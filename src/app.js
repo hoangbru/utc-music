@@ -16,9 +16,15 @@ import browseRoutes from "./api/browse/routes.js"
 import adminRoutes from "./api/admin/routes.js"
 
 const app = express()
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [];
+const corsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+  optionsSuccessStatus: 200 
+};
 
 // Middleware
-app.use(cors())
+app.use(cors(corsOptions));
 app.use(express.json())
 
 // Swagger configuration
