@@ -1,5 +1,5 @@
-import express from "express"
-import { authMiddleware } from "../../middlewares/authMiddleware.js"
+import express from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
 import {
   createPlaylist,
   getPlaylist,
@@ -8,12 +8,17 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
   reorderSongs,
-} from "./controller.js"
-import { validateRequest } from "../../utils/validation.js"
-import { createPlaylistSchema, updatePlaylistSchema, addSongSchema, reorderSongsSchema } from "./validation.js"
+} from "./controller.js";
+import { validateRequest } from "../../utils/validation.js";
+import {
+  createPlaylistSchema,
+  updatePlaylistSchema,
+  addSongSchema,
+  reorderSongsSchema,
+} from "./validation.js";
+import upload from "../../middlewares/upload.js";
 
-const router = express.Router()
-
+const router = express.Router();
 /**
  * @swagger
  * /api/playlists:
@@ -25,7 +30,7 @@ const router = express.Router()
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -33,13 +38,18 @@ const router = express.Router()
  *                 type: string
  *               imageUri:
  *                 type: string
- *               isPublic:
- *                 type: boolean
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Playlist created
  */
-router.post("/", authMiddleware, validateRequest(createPlaylistSchema), createPlaylist)
+router.post(
+  "/",
+  authMiddleware,
+  upload.single("imageUri"),
+  validateRequest(createPlaylistSchema),
+  createPlaylist
+);
 
 /**
  * @swagger
@@ -67,7 +77,7 @@ router.post("/", authMiddleware, validateRequest(createPlaylistSchema), createPl
  *       200:
  *         description: Playlist retrieved
  */
-router.get("/:id", getPlaylist)
+router.get("/:id", getPlaylist);
 
 /**
  * @swagger
@@ -86,7 +96,7 @@ router.get("/:id", getPlaylist)
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -94,13 +104,20 @@ router.get("/:id", getPlaylist)
  *                 type: string
  *               imageUri:
  *                 type: string
+ *                 format: binary
  *               isPublic:
  *                 type: boolean
  *     responses:
  *       200:
  *         description: Playlist updated
  */
-router.put("/:id", authMiddleware, validateRequest(updatePlaylistSchema), updatePlaylist)
+router.put(
+  "/:id",
+  authMiddleware,
+  upload.single("imageUri"),
+  validateRequest(updatePlaylistSchema),
+  updatePlaylist
+);
 
 /**
  * @swagger
@@ -120,7 +137,7 @@ router.put("/:id", authMiddleware, validateRequest(updatePlaylistSchema), update
  *       200:
  *         description: Playlist deleted
  */
-router.delete("/:id", authMiddleware, deletePlaylist)
+router.delete("/:id", authMiddleware, deletePlaylist);
 
 /**
  * @swagger
@@ -149,7 +166,7 @@ router.delete("/:id", authMiddleware, deletePlaylist)
  *       201:
  *         description: Song added
  */
-router.post("/:id/add-song", authMiddleware, validateRequest(addSongSchema), addSongToPlaylist)
+router.post("/:id/add-song", authMiddleware, validateRequest(addSongSchema), addSongToPlaylist);
 
 /**
  * @swagger
@@ -178,7 +195,7 @@ router.post("/:id/add-song", authMiddleware, validateRequest(addSongSchema), add
  *       200:
  *         description: Song removed
  */
-router.delete("/:id/remove-song", authMiddleware, removeSongFromPlaylist)
+router.delete("/:id/remove-song", authMiddleware, removeSongFromPlaylist);
 
 /**
  * @swagger
@@ -214,6 +231,6 @@ router.delete("/:id/remove-song", authMiddleware, removeSongFromPlaylist)
  *       200:
  *         description: Songs reordered
  */
-router.put("/:id/reorder", authMiddleware, validateRequest(reorderSongsSchema), reorderSongs)
+router.put("/:id/reorder", authMiddleware, validateRequest(reorderSongsSchema), reorderSongs);
 
-export default router
+export default router;
