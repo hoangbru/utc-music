@@ -26,7 +26,7 @@ model User {
   displayName String?
   avatarUri   String?
   role        Role     @default(USER)
-  status      Status   @default(PENDING)
+  status      Status   @default(ACTIVE)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -154,12 +154,12 @@ model PlayListSong {
 }
 
 // Model for Email Verification
-model EmailVerification {
-  id        String   @id @default(uuid())
-  email     String
-  code      String // The 6-digit verification code
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+// model EmailVerification {
+//   id        String   @id @default(uuid())
+//   email     String
+//   code      String // The 6-digit verification code
+//   expiresAt DateTime
+//   createdAt DateTime @default(now())
 
-  @@index([email])
-}
+//   @@index([email])
+// }

@@ -160,7 +160,6 @@ The database includes the following main entities:
 - **Artist**: Music artists
 - **Album**: Music albums
 - **Genre**: Music genres
-- **EmailVerification**: Email verification codes
 
 See `prisma/schema.prisma` for the complete schema.
 
