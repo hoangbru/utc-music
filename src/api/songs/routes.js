@@ -1,8 +1,31 @@
 import express from "express"
 import { authMiddleware } from "../../middlewares/authMiddleware.js"
-import { getSong, playSong, likeSong, unlikeSong } from "./controller.js"
+import { getSong, playSong, likeSong, unlikeSong, getSongs } from "./controller.js"
 
 const router = express.Router()
+
+/**
+ * @swagger
+ * /api/songs:
+ *   get:
+ *     summary: Get all songs
+ *     tags: [Songs]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: List of songs
+ */
+router.get("/", getSongs)
 
 /**
  * @swagger

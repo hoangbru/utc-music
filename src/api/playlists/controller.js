@@ -80,6 +80,14 @@ export const getPlaylist = async (req, res, next) => {
 
     const playlist = await prisma.playlist.findUnique({
       where: { id: req.params.id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            displayName: true,
+          },
+        },
+      },
     });
 
     if (!playlist) {

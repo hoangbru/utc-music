@@ -47,7 +47,7 @@ router.get("/", getCurrentUser);
  *             properties:
  *               displayName:
  *                 type: string
- *               avatar:
+ *               avatarUri:
  *                 type: string
  *                 format: binary
  *     responses:
@@ -56,7 +56,7 @@ router.get("/", getCurrentUser);
  */
 router.put(
   "/",
-  upload.single("avatar"),
+  upload.single("avatarUri"),
   validateRequest(updateProfileSchema),
   updateProfile
 );
