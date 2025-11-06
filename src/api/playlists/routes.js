@@ -8,6 +8,7 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
   reorderSongs,
+  getPublicPlaylists,
 } from "./controller.js";
 import { validateRequest } from "../../utils/validation.js";
 import {
@@ -50,6 +51,29 @@ router.post(
   validateRequest(createPlaylistSchema),
   createPlaylist
 );
+
+/**
+ * @swagger
+ * /api/playlists:
+ *   get:
+ *     summary: Get all public playlits
+ *     tags: [Playlists]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: List of public playlists
+ */
+router.get("/", getPublicPlaylists)
 
 /**
  * @swagger

@@ -33,6 +33,46 @@ export const createPlaylist = async (req, res, next) => {
   }
 };
 
+export const getPublicPlaylists = async (req, res, next) => {
+  try {
+    const page = Number.parseInt(req.query.page) || 1;
+    const limit = Number.parseInt(req.query.limit) || 20;
+    
+    const skip = (page - 1) * limit;
+
+    const [playlists, totalItems] = await Promise.all([
+      prisma.playlist.findMany({
+        where: {
+          isPublic: true, 
+        },
+        skip,
+        take: limit,
+      }),
+      
+      prisma.playlist.count({
+        where: {
+          isPublic: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      data: playlists,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      },
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getPlaylist = async (req, res, next) => {
   try {
     const page = Number.parseInt(req.query.page) || 1;
