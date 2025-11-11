@@ -12,8 +12,7 @@ import {
 } from "./controller.js";
 import { validateRequest } from "../../utils/validation.js";
 import {
-  createPlaylistSchema,
-  updatePlaylistSchema,
+  playlistSchema,
   addSongSchema,
   reorderSongsSchema,
 } from "./validation.js";
@@ -40,6 +39,10 @@ const router = express.Router();
  *               imageUri:
  *                 type: string
  *                 format: binary
+ *               description:
+ *                 type: string
+ *               isPublic:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Playlist created
@@ -48,7 +51,7 @@ router.post(
   "/",
   authMiddleware,
   upload.single("imageUri"),
-  validateRequest(createPlaylistSchema),
+  validateRequest(playlistSchema),
   createPlaylist
 );
 
@@ -73,7 +76,7 @@ router.post(
  *       200:
  *         description: List of public playlists
  */
-router.get("/", getPublicPlaylists)
+router.get("/", getPublicPlaylists);
 
 /**
  * @swagger
@@ -129,6 +132,8 @@ router.get("/:id", getPlaylist);
  *               imageUri:
  *                 type: string
  *                 format: binary
+ *               description:
+ *                 type: string
  *               isPublic:
  *                 type: boolean
  *     responses:
@@ -139,7 +144,7 @@ router.put(
   "/:id",
   authMiddleware,
   upload.single("imageUri"),
-  validateRequest(updatePlaylistSchema),
+  validateRequest(playlistSchema),
   updatePlaylist
 );
 
@@ -190,7 +195,12 @@ router.delete("/:id", authMiddleware, deletePlaylist);
  *       201:
  *         description: Song added
  */
-router.post("/:id/add-song", authMiddleware, validateRequest(addSongSchema), addSongToPlaylist);
+router.post(
+  "/:id/add-song",
+  authMiddleware,
+  validateRequest(addSongSchema),
+  addSongToPlaylist
+);
 
 /**
  * @swagger
@@ -255,6 +265,11 @@ router.delete("/:id/remove-song", authMiddleware, removeSongFromPlaylist);
  *       200:
  *         description: Songs reordered
  */
-router.put("/:id/reorder", authMiddleware, validateRequest(reorderSongsSchema), reorderSongs);
+router.put(
+  "/:id/reorder",
+  authMiddleware,
+  validateRequest(reorderSongsSchema),
+  reorderSongs
+);
 
 export default router;

@@ -375,9 +375,6 @@ router.put("/artists/:id/verify", verifyArtist);
  *                 type: string
  *                 format: binary
  *                 nullable: true
- *               description:
- *                 type: string
- *                 example: "The third studio album by the band."
  *               artistIds:
  *                 type: array
  *                 items:
@@ -448,8 +445,6 @@ router.get("/albums", getAllAlbums);
  *                 type: string
  *                 format: binary
  *                 nullable: true
- *               description:
- *                 type: string
  *               artistIds:
  *                 type: array
  *                 items:
@@ -546,6 +541,17 @@ router.get("/genres", getAllGenres);
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Genre updated

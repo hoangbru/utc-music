@@ -39,6 +39,7 @@ model Playlist {
   title         String
   imageUri      String?
   followerCount Int      @default(0)
+  description   String?
   isPublic      Boolean  @default(false)
   isFavorite    Boolean  @default(false)
   createdAt     DateTime @default(now())
@@ -86,7 +87,6 @@ model Album {
   title       String
   releaseDate DateTime
   coverUri    String?
-  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

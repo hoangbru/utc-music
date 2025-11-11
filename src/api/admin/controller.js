@@ -379,7 +379,7 @@ export const verifyArtist = async (req, res, next) => {
 
 export const createAlbum = async (req, res, next) => {
   try {
-    const { title, releaseDate, description } = req.body;
+    const { title, releaseDate } = req.body;
     let coverUri = null;
     let { artistIds } = req.body;
 
@@ -402,7 +402,6 @@ export const createAlbum = async (req, res, next) => {
         title,
         releaseDate: new Date(releaseDate),
         coverUri,
-        description,
       },
     });
 
@@ -458,13 +457,12 @@ export const getAllAlbums = async (req, res, next) => {
 export const updateAlbum = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, releaseDate, coverUri, description } = req.body;
+    const { title, releaseDate, coverUri } = req.body;
 
     const updateData = {
       ...(title && { title }),
       ...(releaseDate && { releaseDate: new Date(releaseDate) }),
       ...(coverUri && { coverUri }),
-      ...(description && { description }),
     };
 
     // Upload new cover image if provided

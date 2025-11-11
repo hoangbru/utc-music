@@ -7,7 +7,7 @@ import {
 
 export const createPlaylist = async (req, res, next) => {
   try {
-    const { title, isPublic } = req.body;
+    const { title, description, isPublic } = req.body;
     let imageUri = null;
 
     if (req.file) {
@@ -22,6 +22,7 @@ export const createPlaylist = async (req, res, next) => {
         userId: req.user.userId,
         title,
         imageUri,
+        description,
         isPublic: isPublic || false,
         isFavorite: false,
       },
@@ -127,11 +128,12 @@ export const getPlaylist = async (req, res, next) => {
 export const updatePlaylist = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, imageUri, isPublic } = req.body;
+    const { title, imageUri, description, isPublic } = req.body;
 
     const updateData = {
       ...(title && { title }),
       ...(imageUri && { imageUri }),
+      ...(description && { description }),
       ...(isPublic !== undefined && { isPublic }),
     };
 
