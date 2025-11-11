@@ -11,47 +11,58 @@ export const search = async (req, res, next) => {
       return res.status(400).json({ error: "Search query must be at least 2 characters" })
     }
 
-    const [songs, artists, albums, totalSongs, totalArtists, totalAlbums] = await Promise.all([
-      prisma.song.findMany({
-        where: {
-          title: { contains: q, mode: "insensitive" },
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.artist.findMany({
-        where: {
-          name: { contains: q, mode: "insensitive" },
-          status: "ACTIVE",
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.album.findMany({
-        where: {
-          title: { contains: q, mode: "insensitive" },
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.song.count({
-        where: {
-          title: { contains: q, mode: "insensitive" },
-        },
-      }),
-      prisma.artist.count({
-        where: {
-          name: { contains: q, mode: "insensitive" },
-          status: "ACTIVE",
-        },
-      }),
-      prisma.album.count({
-        where: {
-          title: { contains: q, mode: "insensitive" },
-        },
-      }),
-    ])
+    const searchPattern = `%${q}%`
 
+    const [songs, artists, albums, totalSongsResult, totalArtistsResult, totalAlbumsResult] = 
+      await Promise.all([
+        // Songs
+        prisma.$queryRaw`
+          SELECT * FROM "Song" 
+          WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
+          ORDER BY title
+          LIMIT ${limit} OFFSET ${skip}
+        `,
+        
+        // Artists
+        prisma.$queryRaw`
+          SELECT * FROM "Artist" 
+          WHERE immutable_unaccent_lower(name) LIKE immutable_unaccent_lower(${searchPattern})
+            AND status = 'ACTIVE'
+          ORDER BY name
+          LIMIT ${limit} OFFSET ${skip}
+        `,
+        
+        // Albums
+        prisma.$queryRaw`
+          SELECT * FROM "Album" 
+          WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
+          ORDER BY title
+          LIMIT ${limit} OFFSET ${skip}
+        `,
+        
+        // Total Songs
+        prisma.$queryRaw`
+          SELECT COUNT(*)::int as count FROM "Song" 
+          WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
+        `,
+        
+        // Total Artists
+        prisma.$queryRaw`
+          SELECT COUNT(*)::int as count FROM "Artist" 
+          WHERE immutable_unaccent_lower(name) LIKE immutable_unaccent_lower(${searchPattern})
+            AND status = 'ACTIVE'
+        `,
+        
+        // Total Albums
+        prisma.$queryRaw`
+          SELECT COUNT(*)::int as count FROM "Album" 
+          WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
+        `
+      ])
+
+    const totalSongs = totalSongsResult[0].count
+    const totalArtists = totalArtistsResult[0].count
+    const totalAlbums = totalAlbumsResult[0].count
     const totalItems = totalSongs + totalArtists + totalAlbums
     const totalPages = Math.ceil(totalItems / limit)
 
@@ -66,6 +77,9 @@ export const search = async (req, res, next) => {
         limit,
         totalItems,
         totalPages,
+        totalSongs,
+        totalArtists,
+        totalAlbums,
       },
     })
   } catch (error) {
