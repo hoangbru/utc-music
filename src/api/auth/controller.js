@@ -5,6 +5,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../../utils/jwt.utils.js";
+import { successResponse } from "../../utils/response.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -65,16 +66,16 @@ export const register = async (req, res, next) => {
     // await sendVerificationEmail(email, verificationCode)
     // =========================================================================
 
-    res.status(201).json({
-      message: "Registration successful.",
-      user: {
-        id: user.id,
-        userName: user.userName,
-        email: user.email,
-        displayName: user.displayName,
-        status: user.status,
-      },
-    });
+    const data = {
+      id: user.id,
+      userName: user.userName,
+      email: user.email,
+      displayName: user.displayName,
+      status: user.status,
+    };
+    const message = "Registration successfully";
+
+    successResponse(res, data, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -160,8 +161,8 @@ export const login = async (req, res, next) => {
     const accessToken = generateAccessToken(user.id, user.role);
     const refreshToken = generateRefreshToken(user.id);
 
-    res.status(200).json({
-      message: "Login successful",
+    const message = "Login successfully";
+    const data = {
       accessToken,
       refreshToken,
       user: {
@@ -172,7 +173,9 @@ export const login = async (req, res, next) => {
         avatarUri: user.avatarUri,
         role: user.role,
       },
-    });
+    };
+
+    successResponse(res, data, message);
   } catch (error) {
     next(error);
   }
@@ -193,9 +196,9 @@ export const refreshToken = async (req, res, next) => {
 
     const newAccessToken = generateAccessToken(user.id, user.role);
 
-    res.status(200).json({
-      accessToken: newAccessToken,
-    });
+    const data = { accessToken: newAccessToken };
+    
+    successResponse(res, data);
   } catch (error) {
     next(error);
   }

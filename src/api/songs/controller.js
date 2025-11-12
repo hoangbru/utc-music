@@ -1,4 +1,6 @@
 import prisma from "../../config/db.js";
+import { songSelectFields } from "../../constants/songSelect.js";
+import { successResponse } from "../../utils/response.js";
 
 export const getSongs = async (req, res, next) => {
   try {
@@ -10,35 +12,21 @@ export const getSongs = async (req, res, next) => {
       prisma.song.findMany({
         skip,
         take: limit,
-        orderBy: {
-          views: "desc",
-        },
-        include: {
-          artists: {
-            include: {
-              artist: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
+        orderBy: { releaseDate: "desc" },
+        select: songSelectFields,
       }),
       prisma.song.count(),
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
 
-    res.status(200).json({
-      data: songs,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, songs, null, pagination);
   } catch (error) {
     next(error);
   }
@@ -59,7 +47,7 @@ export const getSong = async (req, res, next) => {
       return res.status(404).json({ error: "Song not found" });
     }
 
-    res.status(200).json(song);
+    successResponse(res, song);
   } catch (error) {
     next(error);
   }
@@ -72,7 +60,10 @@ export const playSong = async (req, res, next) => {
       data: { views: { increment: 1 } },
     });
 
-    res.status(200).json({ message: "Song play recorded", views: song.views });
+    const message = "Song play recorded";
+    const data = { views: song.views };
+
+    successResponse(res, data, message);
   } catch (error) {
     next(error);
   }
@@ -121,7 +112,9 @@ export const likeSong = async (req, res, next) => {
       },
     });
 
-    res.status(201).json({ message: "Song liked" });
+    const message = "Song liked";
+
+    successResponse(res, {}, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -149,7 +142,9 @@ export const unlikeSong = async (req, res, next) => {
       },
     });
 
-    res.status(200).json({ message: "Song unliked" });
+    const message = "Song unliked";
+
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }

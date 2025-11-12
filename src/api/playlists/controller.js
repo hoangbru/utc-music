@@ -4,6 +4,58 @@ import {
   deleteFile,
   extractPublicId,
 } from "../../config/cloudinary.js";
+import { successResponse } from "../../utils/response.js";
+import { songSelectFields } from "../../constants/songSelect.js";
+
+export const getPublicPlaylists = async (req, res, next) => {
+  try {
+    const page = Number.parseInt(req.query.page) || 1;
+    const limit = Number.parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
+    const [playlists, totalItems] = await Promise.all([
+      prisma.playlist.findMany({
+        where: {
+          isPublic: true,
+        },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          imageUri: true,
+          followerCount: true,
+          description: true,
+          isPublic: true,
+          userId: true,
+          user: {
+            select: { displayName: true },
+          },
+          createdAt: true,
+        },
+      }),
+
+      prisma.playlist.count({
+        where: {
+          isPublic: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
+
+    successResponse(res, playlists, null, pagination);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const createPlaylist = async (req, res, next) => {
   try {
@@ -28,46 +80,9 @@ export const createPlaylist = async (req, res, next) => {
       },
     });
 
-    res.status(201).json(playlist);
-  } catch (error) {
-    next(error);
-  }
-};
+    const message = "Playlist created successfully";
 
-export const getPublicPlaylists = async (req, res, next) => {
-  try {
-    const page = Number.parseInt(req.query.page) || 1;
-    const limit = Number.parseInt(req.query.limit) || 20;
-
-    const skip = (page - 1) * limit;
-
-    const [playlists, totalItems] = await Promise.all([
-      prisma.playlist.findMany({
-        where: {
-          isPublic: true,
-        },
-        skip,
-        take: limit,
-      }),
-
-      prisma.playlist.count({
-        where: {
-          isPublic: true,
-        },
-      }),
-    ]);
-
-    const totalPages = Math.ceil(totalItems / limit);
-
-    res.status(200).json({
-      data: playlists,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, playlist, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -75,17 +90,20 @@ export const getPublicPlaylists = async (req, res, next) => {
 
 export const getPlaylist = async (req, res, next) => {
   try {
-    const page = Number.parseInt(req.query.page) || 1;
-    const limit = Number.parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
-
     const playlist = await prisma.playlist.findUnique({
       where: { id: req.params.id },
       include: {
         user: {
           select: {
-            id: true,
             displayName: true,
+          },
+        },
+        songs: {
+          orderBy: { position: "asc" },
+          select: {
+            song: {
+              select: songSelectFields,
+            },
           },
         },
       },
@@ -95,31 +113,12 @@ export const getPlaylist = async (req, res, next) => {
       return res.status(404).json({ error: "Playlist not found" });
     }
 
-    const [songs, totalItems] = await Promise.all([
-      prisma.playListSong.findMany({
-        where: { playListId: req.params.id },
-        include: { song: true },
-        orderBy: { position: "asc" },
-        skip,
-        take: limit,
-      }),
-      prisma.playListSong.count({
-        where: { playListId: req.params.id },
-      }),
-    ]);
-
-    const totalPages = Math.ceil(totalItems / limit);
-
-    res.status(200).json({
+    const formatted = {
       ...playlist,
-      songs: songs.map((ps) => ps.song),
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+      songs: playlist.songs.map((item) => item.song),
+    };
+
+    successResponse(res, formatted);
   } catch (error) {
     next(error);
   }
@@ -168,12 +167,12 @@ export const updatePlaylist = async (req, res, next) => {
       }
     }
 
-    const updated = await prisma.playlist.update({
+    const playlist = await prisma.playlist.update({
       where: { id },
       data: updateData,
     });
 
-    res.status(200).json(updated);
+    successResponse(res, playlist);
   } catch (error) {
     next(error);
   }
@@ -210,7 +209,8 @@ export const deletePlaylist = async (req, res, next) => {
       where: { id: req.params.id },
     });
 
-    res.status(200).json({ message: "Playlist deleted" });
+    const message = "Playlist deleted";
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -261,7 +261,8 @@ export const addSongToPlaylist = async (req, res, next) => {
       },
     });
 
-    res.status(201).json({ message: "Song added to playlist" });
+    const message = "Song added to playlist";
+    successResponse(res, {}, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -293,7 +294,8 @@ export const removeSongFromPlaylist = async (req, res, next) => {
       },
     });
 
-    res.status(200).json({ message: "Song removed from playlist" });
+    const message = "Song removed from playlist";
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -328,7 +330,8 @@ export const reorderSongs = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ message: "Songs reordered" });
+    const message = "Songs reordered";
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }

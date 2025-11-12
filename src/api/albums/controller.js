@@ -1,4 +1,5 @@
 import prisma from "../../config/db.js";
+import { successResponse } from "../../utils/response.js";
 
 export const getAlbums = async (req, res, next) => {
   try {
@@ -10,24 +11,33 @@ export const getAlbums = async (req, res, next) => {
       prisma.album.findMany({
         skip,
         take: limit,
-        include: {
-          artists: { include: { artist: true } },
+        select: {
+          id: true,
+          title: true,
+          releaseDate: true,
+          coverUri: true,
+          artists: {
+            select: {
+              artistId: true,
+              artist: {
+                select: { name: true },
+              },
+            },
+          },
         },
       }),
       prisma.album.count(),
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
 
-    res.status(200).json({
-      data: albums,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, albums, null, pagination);
   } catch (error) {
     next(error);
   }
@@ -47,7 +57,7 @@ export const getAlbum = async (req, res, next) => {
       return res.status(404).json({ error: "Album not found" });
     }
 
-    res.status(200).json(album);
+    successResponse(res, album);
   } catch (error) {
     next(error);
   }

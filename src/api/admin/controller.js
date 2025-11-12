@@ -4,6 +4,7 @@ import {
   deleteFile,
   extractPublicId,
 } from "../../config/cloudinary.js";
+import { successResponse } from "../../utils/response.js";
 
 // --- SONGS ---
 
@@ -80,7 +81,9 @@ export const createSong = async (req, res, next) => {
       }
     }
 
-    res.status(201).json(song);
+    const message = "Song created successfully";
+
+    successResponse(res, song, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -106,16 +109,16 @@ export const getAllSongs = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
 
-    res.status(200).json({
-      data: songs,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    const message = "Songs retrieved successfully";
+
+    successResponse(res, songs, message, pagination);
   } catch (error) {
     next(error);
   }
@@ -183,7 +186,9 @@ export const updateSong = async (req, res, next) => {
       data: updateData,
     });
 
-    res.status(200).json(song);
+    const message = "Song updated successfully";
+
+    successResponse(res, song, message);
   } catch (error) {
     next(error);
   }
@@ -222,7 +227,9 @@ export const deleteSong = async (req, res, next) => {
       where: { id: req.params.id },
     });
 
-    res.status(200).json({ message: "Song deleted" });
+    const message = "Song deleted successfully";
+
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -253,7 +260,9 @@ export const createArtist = async (req, res, next) => {
       },
     });
 
-    res.status(201).json(artist);
+    const message = "Artist created successfully";
+
+    successResponse(res, artist, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -274,16 +283,15 @@ export const getAllArtists = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
+    const message = "Artists retrieved successfully";
 
-    res.status(200).json({
-      data: artists,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, artists, message, pagination);
   } catch (error) {
     next(error);
   }
@@ -335,7 +343,9 @@ export const updateArtist = async (req, res, next) => {
       data: updateData,
     });
 
-    res.status(200).json(artist);
+    const message = "Artist updated successfully";
+
+    successResponse(res, artist, message);
   } catch (error) {
     next(error);
   }
@@ -356,7 +366,9 @@ export const deleteArtist = async (req, res, next) => {
       }
     }
 
-    res.status(200).json({ message: "Artist deleted" });
+    const message = "Artist deleted successfully";
+
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -369,7 +381,9 @@ export const verifyArtist = async (req, res, next) => {
       data: { isVerified: true },
     });
 
-    res.status(200).json(artist);
+    const message = "Verify successfully";
+
+    successResponse(res, artist, message);
   } catch (error) {
     next(error);
   }
@@ -414,7 +428,9 @@ export const createAlbum = async (req, res, next) => {
       }
     }
 
-    res.status(201).json(album);
+    const message = "Album created successfully";
+
+    successResponse(res, album, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -439,16 +455,15 @@ export const getAllAlbums = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
+    const message = "Albums retrieved successfully";
 
-    res.status(200).json({
-      data: albums,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, albums, message, pagination);
   } catch (error) {
     next(error);
   }
@@ -503,7 +518,9 @@ export const updateAlbum = async (req, res, next) => {
       data: updateData,
     });
 
-    res.status(200).json(album);
+    const message = "Album updated successfully";
+
+    successResponse(res, album, message);
   } catch (error) {
     next(error);
   }
@@ -524,7 +541,9 @@ export const deleteAlbum = async (req, res, next) => {
       }
     }
 
-    res.status(200).json({ message: "Album deleted" });
+    const message = "Album deleted successfully";
+
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -543,7 +562,9 @@ export const createGenre = async (req, res, next) => {
       },
     });
 
-    res.status(201).json(genre);
+    const message = "Genre created successfully";
+
+    successResponse(res, genre, message, null, null, 201);
   } catch (error) {
     next(error);
   }
@@ -564,16 +585,15 @@ export const getAllGenres = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
+    const message = "Genres retrieved successfully";
 
-    res.status(200).json({
-      data: genres,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, genres, message, pagination);
   } catch (error) {
     next(error);
   }
@@ -591,7 +611,9 @@ export const updateGenre = async (req, res, next) => {
       },
     });
 
-    res.status(200).json(genre);
+    const message = "Album updated successfully";
+
+    successResponse(res, album, message);
   } catch (error) {
     next(error);
   }
@@ -604,6 +626,9 @@ export const deleteGenre = async (req, res, next) => {
     });
 
     res.status(200).json({ message: "Genre deleted" });
+    const message = "Album deleted successfully";
+
+    successResponse(res, {}, message);
   } catch (error) {
     next(error);
   }
@@ -635,16 +660,15 @@ export const getAllUsers = async (req, res, next) => {
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+    };
+    const message = "Users retrieved successfully";
 
-    res.status(200).json({
-      data: users,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
-    });
+    successResponse(res, users, message, pagination);
   } catch (error) {
     next(error);
   }
@@ -665,7 +689,9 @@ export const updateUserStatus = async (req, res, next) => {
       },
     });
 
-    res.status(200).json(user);
+    const message = "User updated successfully";
+
+    successResponse(res, user, message);
   } catch (error) {
     next(error);
   }
