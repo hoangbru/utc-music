@@ -18,6 +18,12 @@ enum Status {
   PENDING
 }
 
+enum AlbumType {
+  ALBUM
+  SINGLE
+  EP
+}
+
 model User {
   id          String   @id @default(uuid())
   userName    String   @unique
@@ -89,6 +95,7 @@ model Album {
   coverUri    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  type        AlbumType   @default(ALBUM)
 
   songs   Song[]
   artists ArtistAlbum[]

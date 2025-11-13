@@ -3,19 +3,18 @@ import { successResponse } from "../../utils/response.js";
 
 export const getAlbums = async (req, res, next) => {
   try {
-    const page = Number.parseInt(req.query.page) || 1;
-    const limit = Number.parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
+    const { type, page = 1, limit = 10 } = req.query;
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const where = type ? { type } : {};
 
     const [albums, totalItems] = await Promise.all([
       prisma.album.findMany({
         skip,
         take: limit,
-        select: {
-          id: true,
-          title: true,
-          releaseDate: true,
-          coverUri: true,
+        where,
+        include: {
           artists: {
             select: {
               artistId: true,
@@ -26,7 +25,7 @@ export const getAlbums = async (req, res, next) => {
           },
         },
       }),
-      prisma.album.count(),
+      prisma.album.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalItems / limit);
