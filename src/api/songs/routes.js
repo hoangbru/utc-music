@@ -1,8 +1,14 @@
-import express from "express"
-import { authMiddleware } from "../../middlewares/authMiddleware.js"
-import { getSong, playSong, likeSong, unlikeSong, getSongs } from "./controller.js"
+import express from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import {
+  getSong,
+  playSong,
+  likeSong,
+  unlikeSong,
+  getSongs,
+} from "./controller.js";
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @swagger
@@ -25,7 +31,7 @@ const router = express.Router()
  *       200:
  *         description: List of songs
  */
-router.get("/", getSongs)
+router.get("/", getSongs);
 
 /**
  * @swagger
@@ -43,7 +49,7 @@ router.get("/", getSongs)
  *       200:
  *         description: Song details retrieved
  */
-router.get("/:id", getSong)
+router.get("/:id", getSong);
 
 /**
  * @swagger
@@ -59,11 +65,20 @@ router.get("/:id", getSong)
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               duration:
+ *                 type: integer
  *     responses:
- *       200:
+ *       201:
  *         description: Play recorded
  */
-router.post("/:id/play", authMiddleware, playSong)
+router.post("/:id/play", authMiddleware, playSong);
 
 /**
  * @swagger
@@ -83,7 +98,7 @@ router.post("/:id/play", authMiddleware, playSong)
  *       201:
  *         description: Song liked
  */
-router.post("/:id/like", authMiddleware, likeSong)
+router.post("/:id/like", authMiddleware, likeSong);
 
 /**
  * @swagger
@@ -103,6 +118,6 @@ router.post("/:id/like", authMiddleware, likeSong)
  *       200:
  *         description: Song unliked
  */
-router.delete("/:id/unlike", authMiddleware, unlikeSong)
+router.delete("/:id/unlike", authMiddleware, unlikeSong);
 
-export default router
+export default router;

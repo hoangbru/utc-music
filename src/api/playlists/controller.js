@@ -172,7 +172,9 @@ export const updatePlaylist = async (req, res, next) => {
       data: updateData,
     });
 
-    successResponse(res, playlist);
+    const message = "Playlist updated successfully";
+
+    successResponse(res, playlist, message);
   } catch (error) {
     next(error);
   }

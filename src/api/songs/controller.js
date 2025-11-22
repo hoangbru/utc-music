@@ -55,6 +55,18 @@ export const getSong = async (req, res, next) => {
 
 export const playSong = async (req, res, next) => {
   try {
+    const { userId } = req.user;
+    const songId = req.params.id;
+    const { duration } = req.body;
+
+    await prisma.listeningHistory.create({
+      data: {
+        userId,
+        songId,
+        duration,
+      },
+    });
+
     const song = await prisma.song.update({
       where: { id: req.params.id },
       data: { views: { increment: 1 } },

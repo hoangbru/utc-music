@@ -36,7 +36,8 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  playlists Playlist[]
+  playlists        Playlist[]
+  listeningHistory ListeningHistory[]
 }
 
 model Playlist {
@@ -67,10 +68,11 @@ model Song {
   lyrics      String?
   trackNumber Int? // Position within an album
 
-  album     Album          @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  genres    GenreSong[]
-  artists   SongArtist[]
-  playlists PlayListSong[]
+  album            Album              @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  genres           GenreSong[]
+  artists          SongArtist[]
+  playlists        PlayListSong[]
+  listeningHistory ListeningHistory[]
 }
 
 model Artist {
@@ -89,13 +91,13 @@ model Artist {
 }
 
 model Album {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   releaseDate DateTime
   coverUri    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  type        AlbumType   @default(ALBUM)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  type        AlbumType @default(ALBUM)
 
   songs   Song[]
   artists ArtistAlbum[]
@@ -110,6 +112,22 @@ model Genre {
   updatedAt   DateTime @updatedAt
 
   songs GenreSong[]
+}
+
+model ListeningHistory {
+  id             String   @id @default(uuid())
+  userId         String
+  songId         String
+  playedAt       DateTime @default(now())
+  duration       Int
+  completionRate Float    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([userId, playedAt])
+  @@index([songId, playedAt])
+  @@index([userId, songId])
 }
 
 model GenreSong {
