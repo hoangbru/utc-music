@@ -90,6 +90,7 @@ router.get("/songs/trending", getTrendingSongs);
  *         schema:
  *           type: string
  *           enums: [day, week, month]
+ *           default: week
  *       - in: query
  *         name: limit
  *         schema:

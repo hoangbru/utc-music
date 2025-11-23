@@ -36,6 +36,7 @@ export const getTopSongs = async (req, res, next) => {
     const songIds = topSongs.map((s) => s.songId);
     const songs = await prisma.song.findMany({
       where: { id: { in: songIds } },
+      select: songSelectFields,
     });
 
     // Map results
@@ -54,10 +55,6 @@ export const getTopSongs = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/top-artists
- * Get user's top artists
- */
 export const getTopArtists = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -76,7 +73,16 @@ export const getTopArtists = async (req, res, next) => {
           include: {
             artists: {
               include: {
-                artist: true,
+                artist: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatarUri: true,
+                    country: true,
+                    isVerified: true,
+                    status: true,
+                  },
+                },
               },
             },
           },
@@ -111,10 +117,6 @@ export const getTopArtists = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/top-genres
- * Get user's top genres
- */
 export const getTopGenres = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -168,10 +170,76 @@ export const getTopGenres = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/listening-history
- * Get full listening history
- */
+export const getTopAlbums = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const period = req.query.period || "month";
+    const limit = parseInt(req.query.limit) || 10;
+
+    const dateFrom = getPeriodDate(period);
+
+    const listeningData = await prisma.listeningHistory.findMany({
+      where: {
+        userId,
+        ...(dateFrom && { playedAt: { gte: dateFrom } }),
+      },
+      include: {
+        song: {
+          include: {
+            album: {
+              include: {
+                artists: {
+                  select: {
+                    artistId: true,
+                    artist: {
+                      select: { name: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const albumStats = new Map();
+
+    listeningData.forEach((history) => {
+      const album = history.song.album;
+
+      if (album.type === "SINGLE") return;
+
+      const albumId = album.id;
+      const existing = albumStats.get(albumId) || {
+        album: album,
+        playCount: 0,
+        totalDuration: 0,
+        uniqueSongs: new Set(),
+      };
+
+      existing.playCount++;
+      existing.totalDuration += history.duration;
+      existing.uniqueSongs.add(history.song.id);
+      albumStats.set(albumId, existing);
+    });
+
+    const result = Array.from(albumStats.values())
+      .map((stat) => ({
+        album: stat.album,
+        playCount: stat.playCount,
+        totalDuration: stat.totalDuration,
+        uniqueSongsPlayed: stat.uniqueSongs.size,
+      }))
+      .sort((a, b) => b.playCount - a.playCount)
+      .slice(0, limit);
+
+    successResponse(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getListeningHistory = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -196,10 +264,6 @@ export const getListeningHistory = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/recently-played
- * Get recently played songs (unique)
- */
 export const getRecentlyPlayed = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -225,10 +289,6 @@ export const getRecentlyPlayed = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/discovery
- * Get newly discovered songs
- */
 export const getDiscoveryStats = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -286,10 +346,6 @@ export const getDiscoveryStats = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/stats/personal/wrapped/:year
- * Year-end wrapped summary
- */
 export const getYearWrapped = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -319,7 +375,18 @@ export const getYearWrapped = async (req, res, next) => {
           include: {
             artists: { include: { artist: true } },
             genres: { include: { genre: true } },
-            album: true,
+            album: {
+              include: {
+                artists: {
+                  select: {
+                    artistId: true,
+                    artist: {
+                      select: { name: true },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -364,6 +431,14 @@ export const getYearWrapped = async (req, res, next) => {
 
     const topArtists = await prisma.artist.findMany({
       where: { id: { in: topArtistIds } },
+      select: {
+        id: true,
+        name: true,
+        avatarUri: true,
+        country: true,
+        isVerified: true,
+        status: true,
+      },
     });
 
     // Top 3 genres
@@ -386,6 +461,33 @@ export const getYearWrapped = async (req, res, next) => {
       where: { id: { in: topGenreIds } },
     });
 
+    // Top 5 albums
+    const albumPlayCount = new Map();
+    yearHistory.forEach((h) => {
+      const album = h.song.album;
+
+      if (album.type === "SINGLE") return;
+
+      const albumId = h.song.albumId;
+      const existing = albumPlayCount.get(albumId) || {
+        count: 0,
+        album: album,
+        uniqueSongs: new Set(),
+      };
+      existing.count++;
+      existing.uniqueSongs.add(h.songId);
+      albumPlayCount.set(albumId, existing);
+    });
+
+    const topAlbums = Array.from(albumPlayCount.entries())
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 5)
+      .map(([albumId, data]) => ({
+        album: data.album,
+        playCount: data.count,
+        uniqueSongsPlayed: data.uniqueSongs.size,
+      }));
+
     const result = {
       year,
       totalMinutesListened: totalMinutes,
@@ -403,6 +505,7 @@ export const getYearWrapped = async (req, res, next) => {
         genre,
         playCount: genrePlayCount.get(genre.id) || 0,
       })),
+      topAlbums,
     };
 
     successResponse(res, result, null);
