@@ -53,17 +53,18 @@ export const getSong = async (req, res, next) => {
   }
 };
 
-export const playSong = async (req, res, next) => {
+export const trackListening = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const songId = req.params.id;
-    const { duration } = req.body;
+    const { duration, completionRate } = req.body;
 
     await prisma.listeningHistory.create({
       data: {
         userId,
         songId,
         duration,
+        completionRate
       },
     });
 
@@ -72,7 +73,7 @@ export const playSong = async (req, res, next) => {
       data: { views: { increment: 1 } },
     });
 
-    const message = "Song play recorded";
+    const message = "Listening tracked successfully";
     const data = { views: song.views };
 
     successResponse(res, data, message);

@@ -2,11 +2,13 @@ import express from "express";
 import { authMiddleware } from "../../middlewares/authMiddleware.js";
 import {
   getSong,
-  playSong,
+  trackListening,
   likeSong,
   unlikeSong,
   getSongs,
 } from "./controller.js";
+import { validateRequest } from "../../utils/validation.js";
+import { trackListeningSchema } from "./validation.js";
 
 const router = express.Router();
 
@@ -53,9 +55,9 @@ router.get("/:id", getSong);
 
 /**
  * @swagger
- * /api/songs/{id}/play:
+ * /api/songs/{id}/track:
  *   post:
- *     summary: Record song play
+ *     summary: Track song listening
  *     tags: [Songs]
  *     security:
  *       - BearerAuth: []
@@ -74,11 +76,24 @@ router.get("/:id", getSong);
  *             properties:
  *               duration:
  *                 type: integer
+ *                 description: Duration listened in seconds
+ *                 format: int32
+ *                 example: 120
+ *               completionRate:
+ *                 type: integer
+ *                 format: int32
+ *                 example: 57
  *     responses:
- *       201:
- *         description: Play recorded
+ *       200:
+ *         description: Listening tracked successfully
  */
-router.post("/:id/play", authMiddleware, playSong);
+
+router.post(
+  "/:id/track",
+  authMiddleware,
+  validateRequest(trackListeningSchema),
+  trackListening
+);
 
 /**
  * @swagger
