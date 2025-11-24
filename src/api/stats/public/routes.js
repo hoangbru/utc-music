@@ -11,7 +11,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/stats/public/top-50/songs/by-views:
+ * /api/stats/top-50/songs/by-views:
  *   get:
  *     summary: Get top songs
  *     tags: ["Stats / Public"]
@@ -23,7 +23,7 @@ router.get("/top-50/songs/by-views", getTop50SongsByViews);
 
 /**
  * @swagger
- * /api/stats/public/top-50/songs/by-genre/{genreId}:
+ * /api/stats/top-50/songs/by-genre/{genreId}:
  *   get:
  *     summary: Get top songs by genre
  *     tags: ["Stats / Public"]
@@ -42,7 +42,7 @@ router.get("/top-50/songs/by-genre/:genreId", getTop50SongsByGenres);
 
 /**
  * @swagger
- * /api/stats/public/artists/{artistId}/monthly-listeners:
+ * /api/stats/artists/{artistId}/monthly-listeners:
  *   get:
  *     summary: Get artist monthly listeners
  *     tags: ["Stats / Public"]
@@ -61,7 +61,7 @@ router.get("/artists/:artistId/monthly-listeners", getArtistMonthlyListeners);
 
 /**
  * @swagger
- * /api/stats/public/songs/trending:
+ * /api/stats/songs/trending:
  *   get:
  *     summary: Get trending songs
  *     tags: ["Stats / Public"]
@@ -79,7 +79,7 @@ router.get("/songs/trending", getTrendingSongs);
 
 /**
  * @swagger
- * /api/stats/public/charts/top-songs:
+ * /api/stats/charts/top-songs:
  *   get:
  *     summary: Get top chart songs
  *     tags: ["Stats / Public"]

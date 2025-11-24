@@ -5,6 +5,6 @@ import publicRoutes from "./public/routes.js";
 const router = express.Router();
 
 router.use("/me", personalRoutes);
-router.use("/public", publicRoutes);
+router.use("/", publicRoutes);
 
 export default router;

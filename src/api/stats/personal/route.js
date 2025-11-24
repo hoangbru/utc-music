@@ -3,7 +3,6 @@ import {
   getTopSongs,
   getTopArtists,
   getTopGenres,
-  getListeningHistory,
   getRecentlyPlayed,
   getDiscoveryStats,
   getYearWrapped,
@@ -118,26 +117,6 @@ router.get("/top-genres", getTopGenres);
  *         description: List of albums
  */
 router.get("/top-albums", getTopAlbums);
-
-/**
- * @swagger
- * /api/stats/me/listening-history:
- *   get:
- *     summary: Get listening history
- *     tags: ["Stats / Personal"]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 50
- *     responses:
- *       200:
- *         description: Listening history data
- */
-router.get("/listening-history", getListeningHistory);
 
 /**
  * @swagger

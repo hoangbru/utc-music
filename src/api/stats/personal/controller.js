@@ -240,30 +240,6 @@ export const getTopAlbums = async (req, res, next) => {
   }
 };
 
-export const getListeningHistory = async (req, res, next) => {
-  try {
-    const userId = req.user.userId;
-    const limit = parseInt(req.query.limit) || 50;
-
-    const history = await prisma.listeningHistory.findMany({
-      where: { userId },
-      include: {
-        song: {
-          select: songSelectFields,
-        },
-      },
-      orderBy: {
-        playedAt: "desc",
-      },
-      take: limit,
-    });
-
-    successResponse(res, history, null);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getRecentlyPlayed = async (req, res, next) => {
   try {
     const userId = req.user.userId;
