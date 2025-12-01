@@ -24,6 +24,35 @@ enum AlbumType {
   EP
 }
 
+enum SubscriptionPlan {
+  FREE
+  PREMIUM_MONTHLY
+  PREMIUM_YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  VNPAY
+  MOMO
+  ZALOPAY
+  BANKING
+  CREDIT_CARD
+}
+
 model User {
   id          String   @id @default(uuid())
   userName    String   @unique
@@ -36,8 +65,13 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  isPremium    Boolean   @default(false)
+  premiumUntil DateTime?
+
   playlists        Playlist[]
   listeningHistory ListeningHistory[]
+  subscriptions    UserSubscription[]
+  payments         Payment[]
 }
 
 model Playlist {
@@ -128,6 +162,76 @@ model ListeningHistory {
   @@index([userId, playedAt])
   @@index([songId, playedAt])
   @@index([userId, songId])
+}
+
+model SubscriptionTier {
+  id         String           @id @default(uuid())
+  name       String           @unique
+  plan       SubscriptionPlan @unique
+  price      Float
+  duration   Int
+  features   Json // ["no_ads", "hd_audio", "offline_download"]
+  maxDevices Int              @default(1)
+  isActive   Boolean          @default(true)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  subscriptions UserSubscription[]
+  payments      Payment[]
+}
+
+model UserSubscription {
+  id                 String             @id @default(uuid())
+  userId             String
+  tierId             String
+  status             SubscriptionStatus @default(PENDING)
+  startDate          DateTime
+  endDate            DateTime
+  autoRenew          Boolean            @default(false)
+  cancelledAt        DateTime?
+  cancellationReason String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier SubscriptionTier @relation(fields: [tierId], references: [id])
+
+  @@index([userId, status])
+  @@index([endDate])
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  userId        String
+  tierId        String?
+  amount        Float // VND
+  currency      String        @default("VND")
+  status        PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+
+  // Payment Gateway Info
+  transactionId   String? @unique // ID from VNPay/Momo
+  gatewayOrderId  String? @unique // Order ID sent to gateway
+  gatewayResponse Json? // Raw response from gateway
+
+  // Timestamps
+  createdAt  DateTime  @default(now())
+  paidAt     DateTime?
+  failedAt   DateTime?
+  refundedAt DateTime?
+
+  // Metadata
+  ipAddress   String?
+  userAgent   String?
+  description String?
+
+  user User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier SubscriptionTier? @relation(fields: [tierId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([gatewayOrderId])
+  @@index([transactionId])
 }
 
 model GenreSong {

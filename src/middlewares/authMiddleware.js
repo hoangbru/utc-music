@@ -1,4 +1,4 @@
-import { verifyAccessToken } from "../utils/jwt.utils.js"
+import { verifyAccessToken } from "../utils/jwt.js"
 
 /**
  * Middleware to verify JWT token

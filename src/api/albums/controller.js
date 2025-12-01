@@ -1,5 +1,5 @@
 import prisma from "../../config/db.js";
-import { successResponse } from "../../utils/response.js";
+import { successResponse } from "../../utils/helpers.js";
 
 export const getAlbums = async (req, res, next) => {
   try {

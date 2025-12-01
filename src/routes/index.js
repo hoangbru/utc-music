@@ -10,6 +10,7 @@ import genreRoutes from "../api/genres/routes.js";
 import browseRoutes from "../api/browse/routes.js";
 import adminRoutes from "../api/admin/index.js";
 import statRoutes from "../api/stats/index.js";
+import paymentRoutes from '../api/payment/routes.js';
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use("/genres", genreRoutes);
 router.use("/search", browseRoutes);
 router.use("/admin", adminRoutes);
 router.use("/stats", statRoutes);
+router.use("/payment", paymentRoutes);
 
 export default router;

@@ -1,7 +1,6 @@
 import prisma from "../../../config/db.js";
 import { songSelectFields } from "../../../constants/songSelect.js";
-import { getPeriodDate } from "../../../utils/dateRange.js";
-import { successResponse } from "../../../utils/response.js";
+import { getPeriodDate, successResponse } from "../../../utils/helpers.js";
 
 export const getTop50SongsByViews = async (req, res, next) => {
   try {

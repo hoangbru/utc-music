@@ -4,14 +4,14 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
-} from "../../utils/jwt.utils.js";
-import { successResponse } from "../../utils/response.js";
+} from "../../utils/jwt.js";
+import { successResponse } from "../../utils/helpers.js";
+import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "../../constants/payment.js";
 
 export const register = async (req, res, next) => {
   try {
     const { userName, email, password, displayName } = req.body;
 
-    // Check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: { OR: [{ email }, { userName }] },
     });
@@ -22,26 +22,54 @@ export const register = async (req, res, next) => {
         .json({ error: "Email or userName already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        userName,
-        email,
-        password: hashedPassword,
-        displayName: displayName || userName,
+    const freeTier = await prisma.subscriptionTier.findFirst({
+      where: {
+        plan: SUBSCRIPTION_PLAN.FREE,
+        isActive: true,
       },
     });
 
-    // Create "Liked Songs" playlist
-    await prisma.playlist.create({
-      data: {
-        userId: user.id,
-        title: "Bài hát đã thích",
-        isFavorite: true,
-      },
+    if (!freeTier) {
+      return res.status(500).json({
+        success: false,
+        error: "FREE tier not found. Please contact support.",
+      });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          userName,
+          email,
+          password: hashedPassword,
+          displayName: displayName || userName,
+          isPremium: false,
+          premiumUntil: null,
+        },
+      });
+
+      const subscription = await tx.userSubscription.create({
+        data: {
+          userId: user.id,
+          tierId: freeTier.id,
+          status: SUBSCRIPTION_STATUS.ACTIVE,
+          startDate: new Date(),
+          endDate: new Date("2099-12-31"),
+          autoRenew: false,
+        },
+      });
+
+      const playlist = await tx.playlist.create({
+        data: {
+          userId: user.id,
+          title: "Bài hát đã thích",
+          isFavorite: true,
+        },
+      });
+
+      return { user, subscription, playlist };
     });
 
     // =========================================================================
@@ -67,11 +95,11 @@ export const register = async (req, res, next) => {
     // =========================================================================
 
     const data = {
-      id: user.id,
-      userName: user.userName,
-      email: user.email,
-      displayName: user.displayName,
-      status: user.status,
+      id: result.user.id,
+      userName: result.user.userName,
+      email: result.user.email,
+      displayName: result.user.displayName,
+      isPremium: result.user.isPremium,
     };
     const message = "Registration successfully";
 
@@ -197,7 +225,7 @@ export const refreshToken = async (req, res, next) => {
     const newAccessToken = generateAccessToken(user.id, user.role);
 
     const data = { accessToken: newAccessToken };
-    
+
     successResponse(res, data);
   } catch (error) {
     next(error);

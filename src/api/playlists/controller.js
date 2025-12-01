@@ -4,7 +4,7 @@ import {
   deleteFile,
   extractPublicId,
 } from "../../config/cloudinary.js";
-import { successResponse } from "../../utils/response.js";
+import { successResponse } from "../../utils/helpers.js";
 import { songSelectFields } from "../../constants/songSelect.js";
 
 export const getPublicPlaylists = async (req, res, next) => {

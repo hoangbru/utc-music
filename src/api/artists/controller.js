@@ -1,6 +1,6 @@
 import prisma from "../../config/db.js";
 import { songSelectFields } from "../../constants/songSelect.js";
-import { successResponse } from "../../utils/response.js";
+import { successResponse } from "../../utils/helpers.js";
 
 export const getArtists = async (req, res, next) => {
   try {

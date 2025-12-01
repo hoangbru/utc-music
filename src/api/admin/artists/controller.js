@@ -4,7 +4,7 @@ import {
   deleteFile,
   extractPublicId,
 } from "../../../config/cloudinary.js";
-import { successResponse } from "../../../utils/response.js";
+import { successResponse } from "../../../utils/helpers.js";
 
 export const createArtist = async (req, res, next) => {
   try {
