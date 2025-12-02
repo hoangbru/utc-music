@@ -47,10 +47,7 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   VNPAY
-  MOMO
   ZALOPAY
-  BANKING
-  CREDIT_CARD
 }
 
 model User {
@@ -204,23 +201,20 @@ model Payment {
   id            String        @id @default(uuid())
   userId        String
   tierId        String?
-  amount        Float // VND
+  amount        Float
   currency      String        @default("VND")
   status        PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod
 
-  // Payment Gateway Info
-  transactionId   String? @unique // ID from VNPay/Momo
-  gatewayOrderId  String? @unique // Order ID sent to gateway
-  gatewayResponse Json? // Raw response from gateway
+  transactionId   String? @unique // ID from VNPay/ZaloPay
+  gatewayOrderId  String? @unique
+  gatewayResponse Json?
 
-  // Timestamps
   createdAt  DateTime  @default(now())
   paidAt     DateTime?
   failedAt   DateTime?
   refundedAt DateTime?
 
-  // Metadata
   ipAddress   String?
   userAgent   String?
   description String?
