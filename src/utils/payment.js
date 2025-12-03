@@ -4,6 +4,9 @@ import querystring from "qs";
 import prisma from "../config/db.js";
 import { VNPAY_CONFIG, ZALOPAY_CONFIG } from "../config/payment.js";
 import { sortObject } from "./helpers.js";
+import axios from "axios";
+import { PAYMENT_STATUS, SUBSCRIPTION_STATUS } from "../constants/payment.js";
+import { frontendUrl } from "../constants/index.js";
 
 export const createVNPayPaymentUrl = (
   orderId,
@@ -40,7 +43,9 @@ export const createVNPayPaymentUrl = (
   vnpParams["vnp_SecureHash"] = signed;
 
   const paymentUrl =
-    VNPAY_CONFIG.url + "?" + querystring.stringify(vnpParams, { encode: false });
+    VNPAY_CONFIG.url +
+    "?" +
+    querystring.stringify(vnpParams, { encode: false });
   return paymentUrl;
 };
 
@@ -59,9 +64,9 @@ export const verifyVNPaySignature = (vnpParams) => {
   return secureHash === signed;
 };
 
-export const createZaloPayPayment = async(orderId, amount, orderInfo) => {
+export const createZaloPayPayment = async (orderId, userId, amount, orderInfo) => {
   const embedData = {
-    redirecturl: ZALOPAY_CONFIG.callbackUrl,
+    redirecturl: `${frontendUrl}/payment/result`,
   };
 
   const items = [
@@ -73,25 +78,25 @@ export const createZaloPayPayment = async(orderId, amount, orderInfo) => {
     },
   ];
 
-  const transId = formatDate(new Date()).substring(0, 6);
+  const transId = formatDate(new Date(), "YYMMDD");
   const appTransId = `${transId}_${orderId}`; // yyMMdd_orderId
 
   const order = {
     app_id: ZALOPAY_CONFIG.appId,
     app_trans_id: appTransId,
-    app_user: "demo",
+    app_user: String(userId || "guest"),
     app_time: Date.now(),
-    item: JSON.stringify(items),
-    embed_data: JSON.stringify(embedData),
     amount: amount,
+    item: JSON.stringify(items),
     description: orderInfo,
+    embed_data: JSON.stringify(embedData),
     bank_code: "",
     callback_url: ZALOPAY_CONFIG.callbackUrl,
   };
 
   // Create mac (signature)
   const data =
-    order.app_id +
+    ZALOPAY_CONFIG.appId +
     "|" +
     order.app_trans_id +
     "|" +
@@ -111,20 +116,15 @@ export const createZaloPayPayment = async(orderId, amount, orderInfo) => {
     .digest("hex");
 
   try {
-    const response = await fetch(ZALOPAY_CONFIG.apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams(order).toString(),
+    const res = await axios.post(ZALOPAY_CONFIG.apiUrl, null, {
+      params: order,
     });
-
-    const result = await response.json();
-    return result;
+    return res.data;
   } catch (error) {
+    console.error("ZaloPay error:", error.response?.data || error);
     throw new Error("Failed to create ZaloPay payment");
   }
-}
+};
 
 export const verifyZaloPaySignature = (dataStr, reqMac) => {
   const mac = crypto
@@ -132,7 +132,7 @@ export const verifyZaloPaySignature = (dataStr, reqMac) => {
     .update(dataStr)
     .digest("hex");
   return mac === reqMac;
-}
+};
 
 export const handleSuccessfulPayment = async (
   paymentId,
@@ -151,7 +151,7 @@ export const handleSuccessfulPayment = async (
   await prisma.payment.update({
     where: { id: paymentId },
     data: {
-      status: "SUCCESS",
+      status: PAYMENT_STATUS.SUCCESS,
       transactionId,
       paidAt: new Date(),
       gatewayResponse,
@@ -169,7 +169,7 @@ export const handleSuccessfulPayment = async (
       data: {
         userId: payment.userId,
         tierId: payment.tierId,
-        status: "ACTIVE",
+        status: SUBSCRIPTION_STATUS.ACTIVE,
         startDate: now,
         endDate: endDate,
         autoRenew: false,

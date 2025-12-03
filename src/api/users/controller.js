@@ -3,29 +3,22 @@ import { uploadStream, deleteFile, extractPublicId } from "../../config/cloudina
 
 export const getCurrentUser = async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: req.user.userId },
-      select: {
-        id: true,
-        userName: true,
-        email: true,
-        displayName: true,
-        avatarUri: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-    })
+    });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" })
+      return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(user)
+    const { password, ...rest } = user;
+
+    res.json(rest);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+
 
 export const updateProfile = async (req, res, next) => {
   try {

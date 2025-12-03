@@ -5,7 +5,7 @@ export const VNPAY_CONFIG = {
     process.env.VNPAY_URL ||
     "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
   returnUrl:
-    process.env.VNPAY_RETURN_URL ||
+    `${process.env.API_URL}/${process.env.VNPAY_RETURN_URL}` ||
     "http://localhost:3000/api/payment/vnpay/callback",
 };
 
@@ -14,9 +14,8 @@ export const ZALOPAY_CONFIG = {
   key1: process.env.ZALOPAY_KEY1 || "",
   key2: process.env.ZALOPAY_KEY2 || "",
   apiUrl:
-    process.env.ZALOPAY_API_URL ||
-    "https://sb-openapi.zalopay.vn/v2/create",
+    process.env.ZALOPAY_API_URL || "https://sb-openapi.zalopay.vn/v2/create",
   callbackUrl:
-    process.env.ZALOPAY_RETURN_URL ||
+    `${process.env.API_URL}/${process.env.ZALOPAY_RETURN_URL}` ||
     "http://localhost:3000/api/payment/zalopay/callback",
 };

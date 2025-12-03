@@ -14,12 +14,25 @@ import {
   SUBSCRIPTION_PLAN,
   SUBSCRIPTION_STATUS,
 } from "../../constants/payment.js";
+import { frontendUrl } from "../../constants/index.js";
 
 export async function getSubscriptionTiers(req, res, next) {
   try {
+    const includeFree = req.query.includeFree !== "false";
+
+    const whereClause = {
+      isActive: true,
+    };
+
+    if (!includeFree) {
+      whereClause.plan = {
+        not: "FREE",
+      };
+    }
+    
     const tiers = await prisma.subscriptionTier.findMany({
-      where: { isActive: true },
-      orderBy: { price: "asc" },
+      where: whereClause,
+      orderBy: { price: "desc" },
     });
 
     successResponse(res, tiers);
@@ -109,6 +122,7 @@ export async function createPayment(req, res, next) {
     } else if (paymentMethod === "ZALOPAY") {
       const zaloPayResponse = await createZaloPayPayment(
         orderId,
+        userId,
         tier.price,
         `Thanh toan goi ${tier.name}`
       );
@@ -141,7 +155,6 @@ export async function createPayment(req, res, next) {
 export async function vnpayCallback(req, res, next) {
   try {
     const vnpParams = req.query;
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8000";
 
     const isValid = verifyVNPaySignature(vnpParams);
 
@@ -195,70 +208,61 @@ export async function vnpayCallback(req, res, next) {
     }
   } catch (error) {
     console.error("VNPay callback error:", error);
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8000";
     res.redirect(`${frontendUrl}/payment/result?status=error`);
   }
 }
 
 export async function zaloPayCallback(req, res) {
+  const result = {
+    return_code: 0,
+    return_message: "error",
+  };
+
   try {
-    const result = {};
+    const dataStr = req.body.data;
+    const reqMac = req.body.mac;
 
-    try {
-      const dataStr = req.body.data;
-      const reqMac = req.body.mac;
-
-      const isValid = verifyZaloPaySignature(dataStr, reqMac);
-
-      if (!isValid) {
-        console.error("Invalid ZaloPay signature");
-        result.return_code = -1;
-        result.return_message = "Invalid signature";
-        return res.json(result);
-      }
-
-      const dataJson = JSON.parse(dataStr);
-      const appTransId = dataJson["app_trans_id"];
-      const orderId = appTransId.split("_")[1];
-      const amount = dataJson["amount"];
-
-      const payment = await prisma.payment.findUnique({
-        where: { gatewayOrderId: orderId },
-        include: { tier: true },
-      });
-
-      if (!payment) {
-        console.error("Payment not found:", orderId);
-        result.return_code = 0; // Still return success to ZaloPay
-        result.return_message = "Payment not found";
-        return res.json(result);
-      }
-
-      if (Math.abs(amount - payment.amount) > 0.01) {
-        console.error("Amount mismatch:", {
-          expected: payment.amount,
-          received: amount,
-          orderId,
-        });
-        result.return_code = 0;
-        result.return_message = "Amount mismatch";
-        return res.json(result);
-      }
-
-      await handleSuccessfulPayment(payment.id, appTransId, dataJson);
-
-      result.return_code = 1;
-      result.return_message = "success";
-    } catch (error) {
-      console.error("ZaloPay callback error:", error);
-      result.return_code = 0;
-      result.return_message = error.message;
+    const isValid = verifyZaloPaySignature(dataStr, reqMac);
+    if (!isValid) {
+      console.error("Invalid ZaloPay signature");
+      result.return_code = -1;
+      result.return_message = "Invalid signature";
+      return res.json(result);
     }
 
-    res.json(result);
+    const dataJson = JSON.parse(dataStr);
+    const appTransId = dataJson["app_trans_id"];
+    const orderId = appTransId.split("_")[1];
+    const amount = dataJson["amount"];
+
+    const payment = await prisma.payment.findUnique({
+      where: { gatewayOrderId: orderId },
+      include: { tier: true },
+    });
+
+    if (!payment) {
+      console.error("Payment not found:", orderId);
+      result.return_message = "Payment not found";
+    }
+
+    if (Math.abs(amount - payment.amount) > 0.01) {
+      console.error("Amount mismatch:", {
+        expected: payment.amount,
+        received: amount,
+        orderId,
+      });
+      result.return_message = "Amount mismatch";
+      return res.json(result);
+    }
+
+    await handleSuccessfulPayment(payment.id, appTransId, dataJson);
+
+    result.return_code = 1;
+    result.return_message = "success";
+    return res.json(result);
   } catch (error) {
     console.error("ZaloPay callback error:", error);
-    res.status(500).json({
+    return res.json({
       return_code: 0,
       return_message: "Internal server error",
     });

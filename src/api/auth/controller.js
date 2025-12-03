@@ -6,7 +6,10 @@ import {
   verifyRefreshToken,
 } from "../../utils/jwt.js";
 import { successResponse } from "../../utils/helpers.js";
-import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from "../../constants/payment.js";
+import {
+  SUBSCRIPTION_PLAN,
+  SUBSCRIPTION_STATUS,
+} from "../../constants/payment.js";
 
 export const register = async (req, res, next) => {
   try {

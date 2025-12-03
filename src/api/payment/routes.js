@@ -21,6 +21,14 @@ const router = Router();
  *   get:
  *     summary: Get all available subscription tiers
  *     tags: ["Payment"]
+ *     parameters:
+ *       - in: query
+ *         name: includeFree
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *           default: true
+ *         required: false
  *     responses:
  *       200:
  *         description: List of subscription tiers
