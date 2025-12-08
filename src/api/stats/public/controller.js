@@ -135,7 +135,7 @@ export const getTrendingSongs = async (req, res, next) => {
 export const getTopChartSongs = async (req, res, next) => {
   try {
     const period = req.query.period || "week";
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = Number.parseInt(req.query.limit) || 50;
 
     const dateFrom = getPeriodDate(period);
 

@@ -36,11 +36,10 @@ export const getSong = async (req, res, next) => {
   try {
     const song = await prisma.song.findUnique({
       where: { id: req.params.id },
-      include: {
-        album: true,
-        artists: { include: { artist: true } },
-        genres: { include: { genre: true } },
-      },
+      select: {
+        ...songSelectFields,
+        lyrics: true
+      }
     });
 
     if (!song) {

@@ -1,5 +1,6 @@
 import prisma from "../../config/db.js";
 import { successResponse } from "../../utils/helpers.js";
+import { songSelectFields } from "../../constants/songSelect.js"
 
 export const search = async (req, res, next) => {
   try {
@@ -17,33 +18,30 @@ export const search = async (req, res, next) => {
     const searchPattern = `%${q}%`;
 
     const [
-      songs,
-      artists,
-      albums,
+      songIds,
+      artistIds,
+      albumIds,
       totalSongsResult,
       totalArtistsResult,
       totalAlbumsResult,
     ] = await Promise.all([
-      // Songs
       prisma.$queryRaw`
-          SELECT * FROM "Song" 
+          SELECT id FROM "Song" 
           WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
           ORDER BY title
           LIMIT ${limit} OFFSET ${skip}
         `,
 
-      // Artists
       prisma.$queryRaw`
-          SELECT * FROM "Artist" 
+          SELECT id FROM "Artist" 
           WHERE immutable_unaccent_lower(name) LIKE immutable_unaccent_lower(${searchPattern})
             AND status = 'ACTIVE'
           ORDER BY name
           LIMIT ${limit} OFFSET ${skip}
         `,
 
-      // Albums
       prisma.$queryRaw`
-          SELECT * FROM "Album" 
+          SELECT id FROM "Album" 
           WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
           ORDER BY title
           LIMIT ${limit} OFFSET ${skip}
@@ -68,6 +66,37 @@ export const search = async (req, res, next) => {
           WHERE immutable_unaccent_lower(title) LIKE immutable_unaccent_lower(${searchPattern})
         `,
     ]);
+
+    const songs = await prisma.song.findMany({
+      where: { id: { in: songIds.map((s) => s.id) } },
+      select: songSelectFields,
+    });
+
+    const artists = await prisma.artist.findMany({
+      where: { id: { in: artistIds.map((a) => a.id) } },
+      select: {
+        id: true,
+        name: true,
+        avatarUri: true,
+        country: true,
+        isVerified: true,
+        status: true,
+      },
+    });
+
+    const albums = await prisma.album.findMany({
+      where: { type: { not: "SINGLE" }, id: { in: albumIds.map((a) => a.id) } },
+      include: {
+        artists: {
+          select: {
+            artistId: true,
+            artist: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+    });
 
     const totalSongs = totalSongsResult[0].count;
     const totalArtists = totalArtistsResult[0].count;

@@ -1,4 +1,5 @@
 import swaggerJsdoc from "swagger-jsdoc";
+import { apiUrl } from "../constants/index.js";
 
 const swaggerOptions = {
   definition: {
@@ -11,10 +12,17 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
-        description: "Development server",
+        url:
+          process.env.NODE_ENV == "production"
+            ? apiUrl
+            : "http://localhost:3000",
+        description:
+          process.env.NODE_ENV == "production"
+            ? "Production server"
+            : "Development server",
       },
     ],
+
     components: {
       securitySchemes: {
         BearerAuth: {
@@ -25,7 +33,7 @@ const swaggerOptions = {
       },
     },
   },
-  apis: ["./src/api/**/*.js"],
+  apis: ["./src/api/**/*.js", "./dist/api/**/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

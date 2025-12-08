@@ -6,7 +6,7 @@ export const getTopSongs = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const period = req.query.period || "month";
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Number.parseInt(req.query.limit) || 10;
 
     const dateFrom = getPeriodDate(period);
 
@@ -58,7 +58,7 @@ export const getTopArtists = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const period = req.query.period || "month";
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Number.parseInt(req.query.limit) || 10;
 
     const dateFrom = getPeriodDate(period);
 
@@ -120,7 +120,7 @@ export const getTopGenres = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const period = req.query.period || "month";
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = Number.parseInt(req.query.limit) || 5;
 
     const dateFrom = getPeriodDate(period);
 
@@ -173,7 +173,7 @@ export const getTopAlbums = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const period = req.query.period || "month";
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Number.parseInt(req.query.limit) || 10;
 
     const dateFrom = getPeriodDate(period);
 
@@ -242,7 +242,7 @@ export const getTopAlbums = async (req, res, next) => {
 export const getRecentlyPlayed = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Number.parseInt(req.query.limit) || 20;
 
     const recentHistory = await prisma.listeningHistory.findMany({
       where: { userId },

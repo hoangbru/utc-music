@@ -20,6 +20,12 @@ const router = express.Router()
  *         schema:
  *           type: integer
  *           default: 20
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [ALBUM, SINGLE, EP]
+ *         required: false
  *     responses:
  *       200:
  *         description: List of albums

@@ -291,10 +291,7 @@ export async function getPaymentStatus(req, res, next) {
       });
     }
 
-    res.json({
-      success: true,
-      data: payment,
-    });
+    successResponse(res, payment)
   } catch (error) {
     next(error);
   }
@@ -303,7 +300,7 @@ export async function getPaymentStatus(req, res, next) {
 export async function getPaymentHistory(req, res, next) {
   try {
     const userId = req.user.userId;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Number.parseInt(req.query.limit) || 20;
 
     const payments = await prisma.payment.findMany({
       where: { userId },
@@ -312,10 +309,7 @@ export async function getPaymentHistory(req, res, next) {
       take: limit,
     });
 
-    res.json({
-      success: true,
-      data: payments,
-    });
+    successResponse(res, payments)
   } catch (error) {
     next(error);
   }

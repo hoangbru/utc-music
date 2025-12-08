@@ -1,10 +1,12 @@
 import prisma from "../../config/db.js";
+import { songSelectFields } from "../../constants/songSelect.js";
 import { successResponse } from "../../utils/helpers.js";
 
 export const getAlbums = async (req, res, next) => {
   try {
-    const { type, page = 1, limit = 10 } = req.query;
-
+    const { type } = req.query;
+    const page = Number.parseInt(req.query.page) || 1;
+    const limit = Number.parseInt(req.query.limit) || 20;
     const skip = (Number(page) - 1) * Number(limit);
 
     const where = type ? { type } : {};
@@ -47,8 +49,15 @@ export const getAlbum = async (req, res, next) => {
     const album = await prisma.album.findUnique({
       where: { id: req.params.id },
       include: {
-        songs: { orderBy: { trackNumber: "asc" } },
-        artists: { include: { artist: true } },
+        artists: {
+          select: {
+            artistId: true,
+            artist: {
+              select: { name: true },
+            },
+          },
+        },
+        songs: { select: songSelectFields, orderBy: { trackNumber: "asc" } },
       },
     });
 
