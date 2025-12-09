@@ -27,7 +27,7 @@ router.use(authMiddleware);
  *         name: period
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month, year, all]
  *           default: month
  *       - in: query
  *         name: limit
@@ -53,7 +53,7 @@ router.get("/top-songs", getTopSongs);
  *         name: period
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month, year, all]
  *           default: month
  *       - in: query
  *         name: limit
@@ -79,7 +79,7 @@ router.get("/top-artists", getTopArtists);
  *         name: period
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month, year, all]
  *           default: month
  *       - in: query
  *         name: limit
@@ -105,7 +105,7 @@ router.get("/top-genres", getTopGenres);
  *         name: period
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month, year, all]
  *           default: month
  *       - in: query
  *         name: limit
@@ -151,7 +151,7 @@ router.get("/recently-played", getRecentlyPlayed);
  *         name: period
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month]
  *           default: week
  *     responses:
  *       200:

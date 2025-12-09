@@ -6,10 +6,4 @@ export const trackListeningSchema = Joi.object({
     "number.min": "Thời lượng không được nhỏ hơn {#limit}.",
     "number.max": "Thời lượng không được lớn hơn {#limit}.",
   }),
-
-  completionRate: Joi.number().min(0).max(100).optional().messages({
-    "number.base": "Tỷ lệ hoàn thành phải là một số.",
-    "number.min": "Tỷ lệ hoàn thành không được nhỏ hơn {#limit}.",
-    "number.max": "Tỷ lệ hoàn thành không được lớn hơn {#limit}.",
-  }),
 });

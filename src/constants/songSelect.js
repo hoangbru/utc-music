@@ -1,22 +1,21 @@
-
 export const artistsSelectFields = {
   select: {
     artistId: true,
     artist: {
-      select: { name: true },
+      select: { name: true, isVerified: true },
     },
   },
 };
 
 export const albumSelectFields = {
-  select: { title: true },
+  select: { title: true, coverUri: true, type: true },
 };
 
 export const genresSelectFields = {
   select: {
     genreId: true,
     genre: {
-      select: { name: true },
+      select: { name: true, status: true },
     },
   },
 };

@@ -1,5 +1,6 @@
 import prisma from "../../config/db.js";
 import { songSelectFields } from "../../constants/songSelect.js";
+import { sanitizeCompletionRate } from "../../utils/format.js";
 import { successResponse } from "../../utils/helpers.js";
 
 export const getSongs = async (req, res, next) => {
@@ -38,8 +39,8 @@ export const getSong = async (req, res, next) => {
       where: { id: req.params.id },
       select: {
         ...songSelectFields,
-        lyrics: true
-      }
+        lyrics: true,
+      },
     });
 
     if (!song) {
@@ -56,24 +57,40 @@ export const trackListening = async (req, res, next) => {
   try {
     const { userId } = req.user;
     const songId = req.params.id;
-    const { duration, completionRate } = req.body;
+    const { duration } = req.body;
+
+    const song = await prisma.song.findUnique({
+      where: { id: songId },
+      select: { duration: true, views: true },
+    });
+
+    if (!song) {
+      return res.status(404).json({ error: "Song not found" });
+    }
+
+    const songDuration = song.duration;
+
+    const playedDuration = Math.min(duration, songDuration);
+    const completionRate = sanitizeCompletionRate(
+      (playedDuration / songDuration) * 100
+    );
 
     await prisma.listeningHistory.create({
       data: {
         userId,
         songId,
-        duration,
-        completionRate
+        duration: playedDuration,
+        completionRate,
       },
     });
 
-    const song = await prisma.song.update({
-      where: { id: req.params.id },
+    const updatedSong = await prisma.song.update({
+      where: { id: songId },
       data: { views: { increment: 1 } },
     });
 
     const message = "Listening tracked successfully";
-    const data = { views: song.views };
+    const data = { views: updatedSong.views, completionRate };
 
     successResponse(res, data, message);
   } catch (error) {

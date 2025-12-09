@@ -89,7 +89,7 @@ router.get("/songs/trending", getTrendingSongs);
  *         description: Time period for the chart
  *         schema:
  *           type: string
- *           enums: [day, week, month]
+ *           enum: [week, month, all]
  *           default: week
  *       - in: query
  *         name: limit

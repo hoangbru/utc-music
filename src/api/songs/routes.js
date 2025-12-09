@@ -79,10 +79,6 @@ router.get("/:id", getSong);
  *                 description: Duration listened in seconds
  *                 format: int32
  *                 example: 120
- *               completionRate:
- *                 type: integer
- *                 format: int32
- *                 example: 57
  *     responses:
  *       200:
  *         description: Listening tracked successfully
