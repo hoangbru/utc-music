@@ -20,6 +20,20 @@ export const getPeriodDate = (period) => {
   return now;
 };
 
+export const getPreviousPeriodDate = (period) => {
+  const now = new Date();
+
+  if (period === "week") {
+    return new Date(now.setDate(now.getDate() - 7));
+  }
+  if (period === "month") {
+    return new Date(now.setMonth(now.getMonth() - 1));
+  }
+
+  return null;
+}
+
+
 export const sortObject = (obj) => {
   let sorted = {};
   let str = [];

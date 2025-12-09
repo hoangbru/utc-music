@@ -1,6 +1,6 @@
 import prisma from "../../../config/db.js";
 import { songSelectFields } from "../../../constants/songSelect.js";
-import { getPeriodDate, successResponse } from "../../../utils/helpers.js";
+import { getPeriodDate, getPreviousPeriodDate, successResponse } from "../../../utils/helpers.js";
 
 export const getTop50SongsByViews = async (req, res, next) => {
   try {
@@ -139,30 +139,52 @@ export const getTopChartSongs = async (req, res, next) => {
 
     const dateFrom = getPeriodDate(period);
 
-    const chartSongs = await prisma.listeningHistory.groupBy({
+    const previousDateFrom = getPreviousPeriodDate(period);
+
+    const currentChart = await prisma.listeningHistory.groupBy({
       by: ["songId"],
       where: dateFrom ? { playedAt: { gte: dateFrom } } : undefined,
-      _count: {
-        id: true,
-      },
-      orderBy: {
-        _count: {
-          id: "desc",
-        },
-      },
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
       take: limit,
     });
 
-    const songIds = chartSongs.map((s) => s.songId);
+    const previousChart = await prisma.listeningHistory.groupBy({
+      by: ["songId"],
+      where: previousDateFrom
+        ? { playedAt: { gte: previousDateFrom } }
+        : undefined,
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
+      take: limit,
+    });
+
+    const previousPositionsMap = previousChart.reduce((map, stat, idx) => {
+      map[stat.songId] = idx + 1;
+      return map;
+    }, {});
+
+    const songIds = currentChart.map((s) => s.songId);
     const songs = await prisma.song.findMany({
       where: { id: { in: songIds } },
       select: songSelectFields,
     });
 
-    const result = chartSongs.map((stat, index) => {
+    const result = currentChart.map((stat, index) => {
       const song = songs.find((s) => s.id === stat.songId);
+      const currentPosition = index + 1;
+      const lastPosition = previousPositionsMap[stat.songId] || null;
+
+      let change = null;
+
+      if (lastPosition) {
+        change = lastPosition - currentPosition;
+      }
+
       return {
-        position: index + 1,
+        position: currentPosition,
+        lastPosition,
+        change,
         song,
         playCount: stat._count.id,
       };
