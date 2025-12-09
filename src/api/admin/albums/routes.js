@@ -50,7 +50,7 @@ const router = express.Router();
  *         description: Album created
  */
 router.post(
-  "/albums",
+  "/",
   upload.single("coverUri"),
   validateRequest(createAlbumSchema),
   createAlbum
@@ -79,7 +79,7 @@ router.post(
  *       200:
  *         description: All albums
  */
-router.get("/albums", getAllAlbums);
+router.get("/", getAllAlbums);
 
 /**
  * @swagger
@@ -119,7 +119,7 @@ router.get("/albums", getAllAlbums);
  *       200:
  *         description: Album updated
  */
-router.put("/albums/:id", upload.single("coverUri"), updateAlbum);
+router.put("/:id", upload.single("coverUri"), updateAlbum);
 
 /**
  * @swagger
@@ -139,6 +139,6 @@ router.put("/albums/:id", upload.single("coverUri"), updateAlbum);
  *       200:
  *         description: Album deleted
  */
-router.delete("/albums/:id", deleteAlbum);
+router.delete("/:id", deleteAlbum);
 
 export default router;

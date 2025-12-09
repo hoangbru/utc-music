@@ -85,7 +85,7 @@ export const search = async (req, res, next) => {
     });
 
     const albums = await prisma.album.findMany({
-      where: { type: { not: "SINGLE" }, id: { in: albumIds.map((a) => a.id) } },
+      where: { id: { in: albumIds.map((a) => a.id) } },
       include: {
         artists: {
           select: {

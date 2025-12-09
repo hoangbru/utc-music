@@ -28,7 +28,7 @@ const router = express.Router();
  *       200:
  *         description: All users
  */
-router.get("/users", getAllUsers);
+router.get("/", getAllUsers);
 
 /**
  * @swagger
@@ -59,7 +59,7 @@ router.get("/users", getAllUsers);
  *         description: User status updated
  */
 router.put(
-  "/users/:id/status",
+  "/:id/status",
   validateRequest(updateUserStatusSchema),
   updateUserStatus
 );

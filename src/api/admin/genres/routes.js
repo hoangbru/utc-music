@@ -33,7 +33,7 @@ const router = express.Router();
  *       201:
  *         description: Genre created
  */
-router.post("/genres", validateRequest(createGenreSchema), createGenre);
+router.post("/", validateRequest(createGenreSchema), createGenre);
 
 /**
  * @swagger
@@ -58,7 +58,7 @@ router.post("/genres", validateRequest(createGenreSchema), createGenre);
  *       200:
  *         description: All genres
  */
-router.get("/genres", getAllGenres);
+router.get("/", getAllGenres);
 
 /**
  * @swagger
@@ -89,7 +89,7 @@ router.get("/genres", getAllGenres);
  *       200:
  *         description: Genre updated
  */
-router.put("/genres/:id", updateGenre);
+router.put("/:id", updateGenre);
 
 /**
  * @swagger
@@ -109,6 +109,6 @@ router.put("/genres/:id", updateGenre);
  *       200:
  *         description: Genre deleted
  */
-router.delete("/genres/:id", deleteGenre);
+router.delete("/:id", deleteGenre);
 
 export default router;

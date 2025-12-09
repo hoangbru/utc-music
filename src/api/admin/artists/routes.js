@@ -43,7 +43,7 @@ const router = express.Router();
  *         description: Artist created
  */
 router.post(
-  "/artists",
+  "/",
   upload.single("avatarUri"),
   validateRequest(createArtistSchema),
   createArtist
@@ -72,7 +72,7 @@ router.post(
  *       200:
  *         description: All artists
  */
-router.get("/artists", getAllArtists);
+router.get("/", getAllArtists);
 
 /**
  * @swagger
@@ -112,7 +112,7 @@ router.get("/artists", getAllArtists);
  *         description: Artist updated
  */
 router.put(
-  "/artists/:id",
+  "/:id",
   upload.single("avatarUri"),
   validateRequest(createArtistSchema),
   updateArtist
@@ -136,7 +136,7 @@ router.put(
  *       200:
  *         description: Artist deleted
  */
-router.delete("/artists/:id", deleteArtist);
+router.delete("/:id", deleteArtist);
 
 /**
  * @swagger
@@ -156,6 +156,6 @@ router.delete("/artists/:id", deleteArtist);
  *       200:
  *         description: Artist verified
  */
-router.put("/artists/:id/verify", verifyArtist);
+router.put("/:id/verify", verifyArtist);
 
 export default router;

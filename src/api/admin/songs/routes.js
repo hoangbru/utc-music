@@ -64,7 +64,7 @@ const router = express.Router();
  *         description: Song created
  */
 router.post(
-  "/songs",
+  "/",
   upload.fields([
     { name: "songFile", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
@@ -96,7 +96,7 @@ router.post(
  *       200:
  *         description: All songs
  */
-router.get("/songs", getAllSongs);
+router.get("/", getAllSongs);
 
 /**
  * @swagger
@@ -139,7 +139,7 @@ router.get("/songs", getAllSongs);
  *         description: Song updated
  */
 router.put(
-  "/songs/:id",
+  "/:id",
   upload.fields([
     { name: "songFile", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
@@ -165,6 +165,6 @@ router.put(
  *       200:
  *         description: Song deleted
  */
-router.delete("/songs/:id", deleteSong);
+router.delete("/:id", deleteSong);
 
 export default router;
