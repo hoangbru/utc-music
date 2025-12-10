@@ -1,6 +1,5 @@
 import app from "./app.js";
 import prisma from "./config/db.js";
-import { apiUrl } from "./constants/index.js";
 import { startSubscriptionCronJob } from "./cron/subscription.cron.js";
 
 const PORT = process.env.PORT || 3000;
@@ -12,14 +11,13 @@ const startServer = async () => {
     console.log("Database connected successfully");
 
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-      console.log(
-        `API Documentation: ${
-          process.env.NODE_ENV === "production"
-            ? `${apiUrl}`
-            : `http://localhost:${PORT}`
-        }/api-docs`
-      );
+      if (process.env.NODE_ENV === "production") {
+        console.log(`Server running on ${process.env.API_URL}`);
+        console.log(`API Documentation: ${process.env.API_URL}/api-docs`);
+      } else {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+      }
       startSubscriptionCronJob();
     });
   } catch (error) {

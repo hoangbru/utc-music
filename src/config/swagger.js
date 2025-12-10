@@ -1,11 +1,10 @@
 import swaggerJsdoc from "swagger-jsdoc";
-import { apiUrl } from "../constants/index.js";
 
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Music Streaming API",
+      title: "UTC Music Streaming API",
       version: "1.0.0",
       description:
         "A production-ready RESTful API for a music streaming service",
@@ -13,11 +12,11 @@ const swaggerOptions = {
     servers: [
       {
         url:
-          process.env.NODE_ENV == "production"
+          process.env.NODE_ENV === "production"
             ? apiUrl
             : "http://localhost:3000",
         description:
-          process.env.NODE_ENV == "production"
+          process.env.NODE_ENV === "production"
             ? "Production server"
             : "Development server",
       },

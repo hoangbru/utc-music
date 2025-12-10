@@ -107,15 +107,16 @@ model Song {
 }
 
 model Artist {
-  id         String   @id @default(uuid())
-  name       String
-  biography  String?
-  avatarUri  String?
-  country    String?
-  isVerified Boolean  @default(false)
-  status     Status   @default(ACTIVE)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String
+  biography     String?
+  avatarUri     String?
+  country       String?
+  followerCount Int      @default(0)
+  isVerified    Boolean  @default(false)
+  status        Status   @default(ACTIVE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   songs  SongArtist[]
   albums ArtistAlbum[]

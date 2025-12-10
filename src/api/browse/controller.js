@@ -9,10 +9,10 @@ export const search = async (req, res, next) => {
     const limit = Number.parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    if (!q || q.length < 2) {
+    if (!q || q.length < 1) {
       return res
         .status(400)
-        .json({ error: "Search query must be at least 2 characters" });
+        .json({ error: "Search query must be at least 1 characters" });
     }
 
     const searchPattern = `%${q}%`;

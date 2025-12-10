@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
+import dotenv from "dotenv";
 
 import swaggerSpec from "./config/swagger.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
@@ -14,12 +15,13 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+dotenv.config();
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
 // Swagger configuration
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use("/api", routes);
