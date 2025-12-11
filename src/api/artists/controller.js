@@ -1,4 +1,5 @@
 import prisma from "../../config/db.js";
+import { artistSelectFields } from "../../constants/artistSelect.js";
 import { songSelectFields } from "../../constants/songSelect.js";
 import { successResponse } from "../../utils/helpers.js";
 
@@ -13,14 +14,7 @@ export const getArtists = async (req, res, next) => {
         where: { status: "ACTIVE" },
         skip,
         take: limit,
-        select: {
-          id: true,
-          name: true,
-          avatarUri: true,
-          country: true,
-          isVerified: true,
-          status: true,
-        },
+        select: artistSelectFields,
       }),
       prisma.artist.count({
         where: { status: "ACTIVE" },

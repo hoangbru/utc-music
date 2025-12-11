@@ -1,5 +1,6 @@
 import prisma from "../../../config/db.js";
-import { songSelectFields } from "../../../constants/songSelect.js";
+import { artistSelectFields } from "../../../constants/artistSelect.js";
+import { artistsSelect, songSelectFields } from "../../../constants/songSelect.js";
 import { getPeriodDate, successResponse } from "../../../utils/helpers.js";
 
 export const getTopSongs = async (req, res, next) => {
@@ -73,14 +74,7 @@ export const getTopArtists = async (req, res, next) => {
             artists: {
               include: {
                 artist: {
-                  select: {
-                    id: true,
-                    name: true,
-                    avatarUri: true,
-                    country: true,
-                    isVerified: true,
-                    status: true,
-                  },
+                  select: artistSelectFields,
                 },
               },
             },
@@ -188,12 +182,7 @@ export const getTopAlbums = async (req, res, next) => {
             album: {
               include: {
                 artists: {
-                  select: {
-                    artistId: true,
-                    artist: {
-                      select: { name: true },
-                    },
-                  },
+                  select: artistsSelect,
                 },
               },
             },
@@ -353,12 +342,7 @@ export const getYearWrapped = async (req, res, next) => {
             album: {
               include: {
                 artists: {
-                  select: {
-                    artistId: true,
-                    artist: {
-                      select: { name: true },
-                    },
-                  },
+                  select: artistsSelect,
                 },
               },
             },
@@ -406,14 +390,7 @@ export const getYearWrapped = async (req, res, next) => {
 
     const topArtists = await prisma.artist.findMany({
       where: { id: { in: topArtistIds } },
-      select: {
-        id: true,
-        name: true,
-        avatarUri: true,
-        country: true,
-        isVerified: true,
-        status: true,
-      },
+      select: artistSelectFields,
     });
 
     // Top 3 genres

@@ -1,5 +1,5 @@
 import prisma from "../../config/db.js";
-import { songSelectFields } from "../../constants/songSelect.js";
+import { artistsSelect, songSelectFields } from "../../constants/songSelect.js";
 import { successResponse } from "../../utils/helpers.js";
 
 export const getAlbums = async (req, res, next) => {
@@ -18,12 +18,7 @@ export const getAlbums = async (req, res, next) => {
         where,
         include: {
           artists: {
-            select: {
-              artistId: true,
-              artist: {
-                select: { name: true },
-              },
-            },
+            select: artistsSelect,
           },
         },
       }),
@@ -50,12 +45,7 @@ export const getAlbum = async (req, res, next) => {
       where: { id: req.params.id },
       include: {
         artists: {
-          select: {
-            artistId: true,
-            artist: {
-              select: { name: true },
-            },
-          },
+          select: artistsSelect,
         },
         songs: { select: songSelectFields, orderBy: { trackNumber: "asc" } },
       },

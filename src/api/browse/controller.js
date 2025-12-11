@@ -1,6 +1,7 @@
 import prisma from "../../config/db.js";
 import { successResponse } from "../../utils/helpers.js";
-import { songSelectFields } from "../../constants/songSelect.js"
+import { artistsSelect, songSelectFields } from "../../constants/songSelect.js"
+import { artistSelectFields } from "../../constants/artistSelect.js";
 
 export const search = async (req, res, next) => {
   try {
@@ -74,26 +75,14 @@ export const search = async (req, res, next) => {
 
     const artists = await prisma.artist.findMany({
       where: { id: { in: artistIds.map((a) => a.id) } },
-      select: {
-        id: true,
-        name: true,
-        avatarUri: true,
-        country: true,
-        isVerified: true,
-        status: true,
-      },
+      select: artistSelectFields,
     });
 
     const albums = await prisma.album.findMany({
       where: { id: { in: albumIds.map((a) => a.id) } },
       include: {
         artists: {
-          select: {
-            artistId: true,
-            artist: {
-              select: { name: true },
-            },
-          },
+          select: artistsSelect,
         },
       },
     });
