@@ -38,7 +38,7 @@ const router = express.Router();
  *                 type: string
  *               releaseDate:
  *                 type: string
- *                 format: date
+ *                 example: "31-02-2024"
  *               albumId:
  *                 type: string
  *               lyrics:
@@ -123,7 +123,7 @@ router.get("/", getAllSongs);
  *                 type: string
  *               releaseDate:
  *                 type: string
- *                 format: date
+ *                 example: "31-02-2024"
  *               lyrics:
  *                 type: string
  *               trackNumber:
