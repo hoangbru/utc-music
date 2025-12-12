@@ -91,7 +91,7 @@ model Song {
   id          String   @id @default(uuid())
   title       String
   duration    Int // Store in seconds
-  releaseDate DateTime
+  releaseDate String
   albumId     String
   url         String
   coverUri    String
@@ -125,7 +125,7 @@ model Artist {
 model Album {
   id          String    @id @default(uuid())
   title       String
-  releaseDate DateTime
+  releaseDate String
   coverUri    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

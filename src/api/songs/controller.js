@@ -9,25 +9,50 @@ export const getSongs = async (req, res, next) => {
     const limit = Number.parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
+    const userId = req.user?.userId ?? null;
+
+    const likedPlaylist = userId
+      ? await prisma.playlist.findFirst({
+          where: {
+            userId,
+            isFavorite: true,
+          },
+          select: { id: true },
+        })
+      : null;
+
     const [songs, totalItems] = await Promise.all([
       prisma.song.findMany({
         skip,
         take: limit,
         orderBy: { releaseDate: "desc" },
-        select: songSelectFields,
+        select: {
+          ...songSelectFields,
+          playlists: likedPlaylist
+            ? {
+                where: {
+                  playListId: likedPlaylist.id,
+                },
+                select: { playListId: true },
+              }
+            : false,
+        },
       }),
       prisma.song.count(),
     ]);
 
-    const totalPages = Math.ceil(totalItems / limit);
-    const pagination = {
+    const data = songs.map((song) => ({
+      ...song,
+      isLiked: likedPlaylist ? song.playlists.length > 0 : false,
+      playlists: undefined,
+    }));
+
+    successResponse(res, data, null, {
       page,
       limit,
       totalItems,
-      totalPages,
-    };
-
-    successResponse(res, songs, null, pagination);
+      totalPages: Math.ceil(totalItems / limit),
+    });
   } catch (error) {
     next(error);
   }
@@ -35,19 +60,43 @@ export const getSongs = async (req, res, next) => {
 
 export const getSong = async (req, res, next) => {
   try {
+    const songId = req.params.id;
+    const userId = req.user?.userId ?? null;
+
+    const likedPlaylist = userId
+      ? await prisma.playlist.findFirst({
+          where: {
+            userId,
+            isFavorite: true,
+          },
+          select: { id: true },
+        })
+      : null;
+
     const song = await prisma.song.findUnique({
-      where: { id: req.params.id },
+      where: { id: songId },
       select: {
         ...songSelectFields,
-        lyrics: true,
+        playlists: likedPlaylist
+          ? {
+              where: { playListId: likedPlaylist.id },
+              select: { playListId: true },
+            }
+          : false,
       },
     });
 
     if (!song) {
-      return res.status(404).json({ error: "Song not found" });
+      return res.status(404).json({ message: "Song not found" });
     }
 
-    successResponse(res, song);
+    const data = {
+      ...song,
+      isLiked: likedPlaylist ? song.playlists.length > 0 : false,
+      playlists: undefined,
+    };
+
+    successResponse(res, data);
   } catch (error) {
     next(error);
   }

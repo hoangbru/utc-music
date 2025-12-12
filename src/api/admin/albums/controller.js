@@ -8,7 +8,7 @@ import { successResponse } from "../../../utils/helpers.js";
 
 export const createAlbum = async (req, res, next) => {
   try {
-    const { title, releaseDate } = req.body;
+    const { title, releaseDate, type } = req.body;
     let coverUri = null;
     let { artistIds } = req.body;
 
@@ -29,8 +29,9 @@ export const createAlbum = async (req, res, next) => {
     const album = await prisma.album.create({
       data: {
         title,
-        releaseDate: new Date(releaseDate),
+        releaseDate,
         coverUri,
+        type
       },
     });
 
@@ -91,7 +92,7 @@ export const updateAlbum = async (req, res, next) => {
 
     const updateData = {
       ...(title && { title }),
-      ...(releaseDate && { releaseDate: new Date(releaseDate) }),
+      ...(releaseDate && { releaseDate }),
       ...(coverUri && { coverUri }),
     };
 

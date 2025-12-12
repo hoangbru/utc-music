@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const createSongSchema = Joi.object({
   title: Joi.string().required(),
-  releaseDate: Joi.date().required(),
+  releaseDate: Joi.string().required(),
   albumId: Joi.string().required(),
   lyrics: Joi.string(),
   trackNumber: Joi.number().allow(""),

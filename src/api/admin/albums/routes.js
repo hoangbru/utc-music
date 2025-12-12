@@ -32,11 +32,9 @@ const router = express.Router();
  *             properties:
  *               title:
  *                 type: string
- *                 example: "Midnight Memories"
  *               releaseDate:
  *                 type: string
- *                 format: date
- *                 example: "2024-11-12"
+ *                 example: "31-02-2024"
  *               coverUri:
  *                 type: string
  *                 format: binary
@@ -45,6 +43,10 @@ const router = express.Router();
  *                 type: array
  *                 items:
  *                   type: string
+ *               type:
+ *                 type: string
+ *                 enum: ["ALBUM", "SINGLE", "EP"]
+ *                 default: "ALBUM"
  *     responses:
  *       201:
  *         description: Album created
@@ -106,7 +108,7 @@ router.get("/", getAllAlbums);
  *                 type: string
  *               releaseDate:
  *                 type: string
- *                 format: date
+ *                 example: "31-02-2024"
  *               coverUri:
  *                 type: string
  *                 format: binary

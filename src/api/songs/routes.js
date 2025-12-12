@@ -1,5 +1,8 @@
 import express from "express";
-import { authMiddleware } from "../../middlewares/authMiddleware.js";
+import {
+  authMiddleware,
+  authOptional,
+} from "../../middlewares/authMiddleware.js";
 import {
   getSong,
   trackListening,
@@ -18,6 +21,8 @@ const router = express.Router();
  *   get:
  *     summary: Get all songs
  *     tags: [Songs]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -33,7 +38,7 @@ const router = express.Router();
  *       200:
  *         description: List of songs
  */
-router.get("/", getSongs);
+router.get("/", authOptional, getSongs);
 
 /**
  * @swagger
@@ -41,6 +46,8 @@ router.get("/", getSongs);
  *   get:
  *     summary: Get song details
  *     tags: [Songs]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -51,7 +58,7 @@ router.get("/", getSongs);
  *       200:
  *         description: Song details retrieved
  */
-router.get("/:id", getSong);
+router.get("/:id", authOptional, getSong);
 
 /**
  * @swagger

@@ -50,7 +50,7 @@ export const createSong = async (req, res, next) => {
       data: {
         title,
         duration: Math.round(songUpload.duration || 0), // Round duration to integer
-        releaseDate: new Date(releaseDate),
+        releaseDate,
         albumId: finalAlbumId,
         url: songUpload.secure_url,
         coverUri: coverUpload.secure_url,
@@ -129,7 +129,7 @@ export const updateSong = async (req, res, next) => {
 
     const updateData = {
       ...(title && { title }),
-      ...(releaseDate && { releaseDate: new Date(releaseDate) }),
+      ...(releaseDate && { releaseDate }),
       ...(lyrics && { lyrics }),
       ...(trackNumber && { trackNumber: Number(trackNumber) }),
     };
