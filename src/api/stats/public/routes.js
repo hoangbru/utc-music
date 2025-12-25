@@ -1,5 +1,8 @@
 import express from "express";
 import {
+  newReleases,
+  featuredAlbums,
+  popularArtists,
   getTop50SongsByViews,
   getTop50SongsByGenres,
   getArtistMonthlyListeners,
@@ -8,6 +11,60 @@ import {
 } from "./controller.js";
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /api/stats/songs/new-releases:
+ *   get:
+ *     summary: Get new release songs
+ *     tags: ["Stats / Public"]
+ *     parameters:
+ *      - in: query
+ *        name: limit
+ *        schema:
+ *         type: integer
+ *         default: 20
+ *     responses:
+ *       200:
+ *         description: List of new release songs
+ */
+router.get("/songs/new-releases", newReleases);
+
+/**
+ * @swagger
+ * /api/stats/albums/featured:
+ *   get:
+ *     summary: Get featured albums
+ *     tags: ["Stats / Public"]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: List of featured albums
+ */
+router.get("/albums/featured", featuredAlbums);
+
+/**
+ * @swagger
+ * /api/stats/artists/popular:
+ *   get:
+ *     summary: Get popular artists
+ *     tags: ["Stats / Public"]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: List of popular artists
+ */
+router.get("/artists/popular", popularArtists);
 
 /**
  * @swagger
