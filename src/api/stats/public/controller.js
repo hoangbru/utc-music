@@ -152,7 +152,7 @@ export const getTopChartSongs = async (req, res, next) => {
     const previousChart = await prisma.listeningHistory.groupBy({
       by: ["songId"],
       where: previousDateFrom
-        ? { playedAt: { gte: previousDateFrom } }
+        ? { playedAt: { gte: previousDateFrom, lt: dateFrom } }
         : undefined,
       _count: { id: true },
       orderBy: { _count: { id: "desc" } },
@@ -172,19 +172,29 @@ export const getTopChartSongs = async (req, res, next) => {
 
     const result = currentChart.map((stat, index) => {
       const song = songs.find((s) => s.id === stat.songId);
-      const currentPosition = index + 1;
-      const lastPosition = previousPositionsMap[stat.songId] || null;
-
-      let change = null;
-
-      if (lastPosition) {
-        change = lastPosition - currentPosition;
+    
+      const rank = index + 1;
+      const previousRank = previousPositionsMap[stat.songId] ?? null;
+    
+      const isNewEntry = previousRank === null;
+    
+      let rankDiff = null;
+      let trend = "new";
+    
+      if (!isNewEntry) {
+        rankDiff = previousRank - rank;
+    
+        if (rankDiff > 0) trend = "up";
+        else if (rankDiff < 0) trend = "down";
+        else trend = "same";
       }
-
+    
       return {
-        position: currentPosition,
-        lastPosition,
-        change,
+        rank,
+        previousRank,
+        rankDiff,
+        trend,
+        isNewEntry,
         song,
         playCount: stat._count.id,
       };

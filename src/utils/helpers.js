@@ -23,16 +23,22 @@ export const getPeriodDate = (period) => {
 export const getPreviousPeriodDate = (period) => {
   const now = new Date();
 
-  if (period === "week") {
-    return new Date(now.setDate(now.getDate() - 7));
-  }
-  if (period === "month") {
-    return new Date(now.setMonth(now.getMonth() - 1));
+  switch (period) {
+    case "week":
+      now.setDate(now.getDate() - 14);
+      break;
+    case "month":
+      now.setMonth(now.getMonth() - 2);
+      break;
+    case "year":
+      now.setFullYear(now.getFullYear() - 2);
+      break;
+    default:
+      return null;
   }
 
-  return null;
-}
-
+  return now;
+};
 
 export const sortObject = (obj) => {
   let sorted = {};
