@@ -8,6 +8,7 @@ import {
   getPeriodDate,
   getPreviousPeriodDate,
   successResponse,
+  addIsLikedToSongs,
 } from "../../../utils/helpers.js";
 
 export const newReleases = async (req, res, next) => {
@@ -34,7 +35,13 @@ export const newReleases = async (req, res, next) => {
       .slice(0, limit)
       .map(({ _releaseDate, ...song }) => song);
 
-    successResponse(res, newReleases);
+    const newReleasesWithIsLiked = await addIsLikedToSongs(
+      newReleases,
+      null,
+      prisma
+    );
+
+    successResponse(res, newReleasesWithIsLiked);
   } catch (error) {
     next(error);
   }
@@ -145,7 +152,9 @@ export const getTop50SongsByViews = async (req, res, next) => {
       select: songSelectFields,
     });
 
-    successResponse(res, songs);
+    const songsWithIsLiked = await addIsLikedToSongs(songs, null, prisma);
+
+    successResponse(res, songsWithIsLiked);
   } catch (error) {
     next(error);
   }
@@ -169,7 +178,9 @@ export const getTop50SongsByGenres = async (req, res, next) => {
       select: songSelectFields,
     });
 
-    successResponse(res, songs);
+    const songsWithIsLiked = await addIsLikedToSongs(songs, null, prisma);
+
+    successResponse(res, songsWithIsLiked);
   } catch (error) {
     next(error);
   }
@@ -258,7 +269,26 @@ export const getTrendingSongs = async (req, res, next) => {
       };
     });
 
-    successResponse(res, result);
+    // Add isLiked to songs in result
+    const songsInResult = result
+      .map((item) => item.song)
+      .filter((song) => song != null);
+    const songsWithIsLiked = await addIsLikedToSongs(
+      songsInResult,
+      null,
+      prisma
+    );
+    const songsWithIsLikedMap = new Map(
+      songsWithIsLiked.map((song) => [song.id, song])
+    );
+    const resultWithIsLiked = result.map((item) => ({
+      ...item,
+      song: item.song
+        ? songsWithIsLikedMap.get(item.song.id) || { ...item.song, isLiked: false }
+        : item.song,
+    }));
+
+    successResponse(res, resultWithIsLiked);
   } catch (error) {
     next(error);
   }
@@ -332,7 +362,26 @@ export const getTopChartSongs = async (req, res, next) => {
       };
     });
 
-    successResponse(res, result);
+    // Add isLiked to songs in result
+    const songsInResult = result
+      .map((item) => item.song)
+      .filter((song) => song != null);
+    const songsWithIsLiked = await addIsLikedToSongs(
+      songsInResult,
+      null,
+      prisma
+    );
+    const songsWithIsLikedMap = new Map(
+      songsWithIsLiked.map((song) => [song.id, song])
+    );
+    const resultWithIsLiked = result.map((item) => ({
+      ...item,
+      song: item.song
+        ? songsWithIsLikedMap.get(item.song.id) || { ...item.song, isLiked: false }
+        : item.song,
+    }));
+
+    successResponse(res, resultWithIsLiked);
   } catch (error) {
     next(error);
   }

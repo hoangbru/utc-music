@@ -1,7 +1,11 @@
 import prisma from "../../../config/db.js";
 import { artistSelectFields } from "../../../constants/artistSelect.js";
 import { artistsSelect, songSelectFields } from "../../../constants/songSelect.js";
-import { getPeriodDate, successResponse } from "../../../utils/helpers.js";
+import {
+  getPeriodDate,
+  successResponse,
+  addIsLikedToSongs,
+} from "../../../utils/helpers.js";
 
 export const getTopSongs = async (req, res, next) => {
   try {
@@ -49,7 +53,26 @@ export const getTopSongs = async (req, res, next) => {
       };
     });
 
-    successResponse(res, result);
+    // Add isLiked to songs in result
+    const songsInResult = result
+      .map((item) => item.song)
+      .filter((song) => song != null);
+    const songsWithIsLiked = await addIsLikedToSongs(
+      songsInResult,
+      userId,
+      prisma
+    );
+    const songsWithIsLikedMap = new Map(
+      songsWithIsLiked.map((song) => [song.id, song])
+    );
+    const resultWithIsLiked = result.map((item) => ({
+      ...item,
+      song: item.song
+        ? songsWithIsLikedMap.get(item.song.id) || { ...item.song, isLiked: false }
+        : item.song,
+    }));
+
+    successResponse(res, resultWithIsLiked);
   } catch (error) {
     next(error);
   }
@@ -247,7 +270,26 @@ export const getRecentlyPlayed = async (req, res, next) => {
       },
     });
 
-    successResponse(res, recentHistory, null);
+    // Add isLiked to songs in recentHistory
+    const songsInHistory = recentHistory
+      .map((item) => item.song)
+      .filter((song) => song != null);
+    const songsWithIsLiked = await addIsLikedToSongs(
+      songsInHistory,
+      userId,
+      prisma
+    );
+    const songsWithIsLikedMap = new Map(
+      songsWithIsLiked.map((song) => [song.id, song])
+    );
+    const recentHistoryWithIsLiked = recentHistory.map((item) => ({
+      ...item,
+      song: item.song
+        ? songsWithIsLikedMap.get(item.song.id) || { ...item.song, isLiked: false }
+        : item.song,
+    }));
+
+    successResponse(res, recentHistoryWithIsLiked, null);
   } catch (error) {
     next(error);
   }
@@ -298,10 +340,17 @@ export const getDiscoveryStats = async (req, res, next) => {
       select: songSelectFields,
     });
 
+    // Add isLiked to newSongs
+    const newSongsWithIsLiked = await addIsLikedToSongs(
+      newSongs,
+      userId,
+      prisma
+    );
+
     const result = {
       period,
-      totalNewSongs: newSongs.length,
-      newSongs,
+      totalNewSongs: newSongsWithIsLiked.length,
+      newSongs: newSongsWithIsLiked,
     };
 
     successResponse(res, result, null);
@@ -371,6 +420,13 @@ export const getYearWrapped = async (req, res, next) => {
       where: { id: { in: topSongIds } },
       select: songSelectFields,
     });
+
+    // Add isLiked to topSongs
+    const topSongsWithIsLiked = await addIsLikedToSongs(
+      topSongs,
+      userId,
+      prisma
+    );
 
     // Top 5 artists
     const artistPlayCount = new Map();
@@ -445,7 +501,7 @@ export const getYearWrapped = async (req, res, next) => {
       totalMinutesListened: totalMinutes,
       totalSongsPlayed: yearHistory.length,
       uniqueSongsPlayed: new Set(yearHistory.map((h) => h.songId)).size,
-      topSongs: topSongs.map((song) => ({
+      topSongs: topSongsWithIsLiked.map((song) => ({
         song,
         playCount: songPlayCount.get(song.id) || 0,
       })),

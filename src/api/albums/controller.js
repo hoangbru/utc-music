@@ -1,6 +1,6 @@
 import prisma from "../../config/db.js";
 import { artistsSelect, songSelectFields } from "../../constants/songSelect.js";
-import { successResponse } from "../../utils/helpers.js";
+import { successResponse, addIsLikedToSongs } from "../../utils/helpers.js";
 
 export const getAlbums = async (req, res, next) => {
   try {
@@ -41,6 +41,8 @@ export const getAlbums = async (req, res, next) => {
 
 export const getAlbum = async (req, res, next) => {
   try {
+    const userId = req.user?.userId ?? null;
+
     const album = await prisma.album.findUnique({
       where: { id: req.params.id },
       include: {
@@ -55,7 +57,19 @@ export const getAlbum = async (req, res, next) => {
       return res.status(404).json({ error: "Album not found" });
     }
 
-    successResponse(res, album);
+    // Add isLiked to songs in album
+    const songsWithIsLiked = await addIsLikedToSongs(
+      album.songs,
+      userId,
+      prisma
+    );
+
+    const albumWithIsLiked = {
+      ...album,
+      songs: songsWithIsLiked,
+    };
+
+    successResponse(res, albumWithIsLiked);
   } catch (error) {
     next(error);
   }
